@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require 'connection.php'; // Include the database connection
+require 'connection.php'; 
 
 $message = '';
 
@@ -13,14 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp = htmlspecialchars(strip_tags(trim($_POST['otp'])));
     $userId = $_SESSION['user_id'];
 
-    // Verify OTP
+    
     $stmt = $pdo->prepare('SELECT otp_code, expiry_time FROM otp_codes WHERE user_id = ?');
     $stmt->execute([$userId]);
     $otpData = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($otpData) {
         if ($otp === $otpData['otp_code'] && strtotime($otpData['expiry_time']) > time()) {
-            // OTP is valid, update user status to verified
+            // if the OTP is valid, update user status to verified
             $stmt = $pdo->prepare('UPDATE users SET is_verified = 1 WHERE id = ?');
             $stmt->execute([$userId]);
 

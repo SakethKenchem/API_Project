@@ -4,20 +4,20 @@ session_start();
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php'; // Load Composer's autoloader
-require 'connection.php'; // Ensure connection.php is included correctly
+require 'vendor/autoload.php'; 
+require 'connection.php'; 
 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ensure the POST data is set before using it
+    
     $username = isset($_POST['username']) ? htmlspecialchars(strip_tags(trim($_POST['username']))) : '';
     $email = isset($_POST['email']) ? htmlspecialchars(strip_tags(trim($_POST['email']))) : '';
     $password = isset($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : '';
 
-    // Validate the form inputs
+    
     if ($username && $email && $password) {
-        // Insert user into the database
+        //
         try {
             $stmt = $pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
             $stmt->execute([$username, $email, $password]);
@@ -29,18 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $otp_code = random_int(100000, 999999);
             $expiry_time = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-            // Insert OTP code into the database
+            
             $stmt = $pdo->prepare('INSERT INTO otp_codes (user_id, otp_code, expiry_time) VALUES (?, ?, ?)');
             $stmt->execute([$userId, $otp_code, $expiry_time]);
 
-            // Send OTP via email
+            
             $mail = new PHPMailer(true);
 
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com'; // Use your SMTP server
+            $mail->Host = 'smtp.gmail.com'; 
             $mail->SMTPAuth = true;
-            $mail->Username = 's.kenchem@gmail.com'; // Your email
-            $mail->Password = 'jncj pmsd ljkk savt'; // Your email password
+            $mail->Username = 's.kenchem@gmail.com'; 
+            $mail->Password = 'jncj pmsd ljkk savt'; 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 

@@ -4,14 +4,14 @@ use PHPMailer\PHPMailer\Exception;
 session_start();
 
 if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php'); // Redirect to the dashboard if the user is already logged in
+    header('Location: dashboard.php'); 
     exit;
 }
 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require 'connection.php'; // Include database connection file
+    require 'connection.php'; 
 
     $email = isset($_POST['email']) ? htmlspecialchars(strip_tags(trim($_POST['email']))) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($password, $user['password'])) {
-                // Credentials are correct, generate OTP
+                // if the credentials are correct, generate a random OTP
                 $otp_code = random_int(100000, 999999);
                 $expiry_time = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
@@ -34,14 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$user['id'], $otp_code, $expiry_time]);
 
                 // Send OTP via email
-                require 'vendor/autoload.php'; // Load PHPMailer
+                require 'vendor/autoload.php'; 
 
                 $mail = new PHPMailer(true);
                 $mail->isSMTP();
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
-                $mail->Username = 's.kenchem@gmail.com'; // Replace with your email
-                $mail->Password = 'jncj pmsd ljkk savt'; // Replace with your email password
+                $mail->Username = 's.kenchem@gmail.com'; 
+                $mail->Password = 'jncj pmsd ljkk savt'; 
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
 

@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php'); // Redirect to login if user is not logged in
+    header('Location: login.php'); 
     exit;
 }
 
-require 'connection.php'; // Include database connection file
+require 'connection.php'; 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $otp = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($otp && $otp['otp_code'] == $otp_code && strtotime($otp['expiry_time']) > time()) {
-                // OTP is correct and not expired, log in the user
+                // if the OTP is correct and not expired, log in the user
                 $_SESSION['logged_in'] = true;
                 header('Location: homepage.php');
                 exit;
