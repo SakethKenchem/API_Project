@@ -11,13 +11,11 @@ if (isset($_POST['query'])) {
         // Bind the query parameter to the prepared statement
         $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
 
-        // Execute the query
         $stmt->execute();
 
         // Fetch all matching users
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Check if users exist and display them
         if ($users) {
             foreach ($users as $user) {
                 echo "<tr>

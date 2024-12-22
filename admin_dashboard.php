@@ -8,7 +8,7 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-// Fetch all users
+
 $stmt = $conn->prepare("SELECT * FROM users");
 $stmt->execute();
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);

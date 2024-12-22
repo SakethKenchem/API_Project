@@ -6,17 +6,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Query to check if the admin exists
+    
     $stmt = $conn->prepare("SELECT * FROM admins WHERE email = :email");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($admin && password_verify($password, $admin['password'])) {
-        // Start a session for the admin
+        
         $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['admin_email'] = $admin['email'];
-        header("Location: admin_dashboard.php"); // Redirect to dashboard
+        header("Location: admin_dashboard.php"); 
         exit();
     } else {
         $error = "Invalid email or password!";
@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<!-- Admin Login Form -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
