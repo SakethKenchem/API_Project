@@ -1,7 +1,7 @@
 <?php
 session_start();
-require 'db.php'; // Database connection
-require 'send_email.php'; // Email sending functionality
+require 'db.php'; 
+require 'send_email.php'; 
 
 $message = '';
 
@@ -20,14 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user_id = $user['id'];
             $otp = rand(100000, 999999);
             
-            // Insert OTP in the database
+            
             $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
             $stmt->execute([$user_id, $otp]);
 
             // Send OTP to the user
             if (sendEmail($email, $otp)) {
-                $_SESSION['user_id'] = $user_id; // Store user ID in session
-                header("Location: verify_login_otp.php"); // Redirect to OTP verification page
+                $_SESSION['user_id'] = $user_id; 
+                header("Location: verify_login_otp.php"); 
                 exit();
             } else {
                 $message = 'Failed to send OTP. Please try again.';
@@ -62,6 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
+
+        <p class="mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
     </form>
     <?php if ($message): ?>
         <div class="alert alert-danger mt-3">

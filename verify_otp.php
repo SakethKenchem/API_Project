@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!-- OTP Verification Page HTML -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

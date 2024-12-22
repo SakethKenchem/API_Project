@@ -10,15 +10,15 @@ function sendEmail($to, $otp)
     try {
         //Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';  // Set your SMTP host
+        $mail->Host       = 'smtp.gmail.com';  
         $mail->SMTPAuth   = true;
-        $mail->Username   = 's.kenchem@gmail.com'; // Your SMTP username
-        $mail->Password   = 'jncj pmsd ljkk savt';   // Your SMTP password
+        $mail->Username   = 's.kenchem@gmail.com'; 
+        $mail->Password   = 'jncj pmsd ljkk savt';   
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         //Recipients
-        $mail->setFrom('noreply@yourdomain.com', 'Your App Name');
+        $mail->setFrom('noreply@yourdomain.com', 'API Project');
         $mail->addAddress($to);
 
         //Content

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$username, $email, $password]);
         $user_id = $conn->lastInsertId();
 
-        // Generate and insert OTP
+        
         $otp = rand(100000, 999999);
         $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
         $stmt->execute([$user_id, $otp]);
@@ -63,6 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+
+                <div class="text-center mt-3">
+                    <a href="login.php">Already have an account? Login</a>
+                </div>
             </form>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <?php
 session_start();
-require 'db.php'; // Database connection
-require 'send_email.php'; // Email sending functionality
+require 'db.php'; 
+require 'send_email.php'; 
 
 // Redirect to login page if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $message = '';
 
-// Check if OTP verification is successful
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp_entered = $_POST['otp'];
     $user_id = $_SESSION['user_id'];
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Check if OTP matches
         if ($otp_record && $otp_record['otp_code'] === $otp_entered) {
-            // OTP matched, login successful
+            //If OTP is matched, login successful
             $_SESSION['is_logged_in'] = true;
             header("Location: dashboard.php");
             exit();
