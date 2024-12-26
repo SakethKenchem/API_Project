@@ -1,39 +1,46 @@
 <?php
 session_start();
-require 'db.php'; 
-require 'send_email.php'; 
+require 'db.php';
+require 'send_email.php';
 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
+    $email = $_POST['email']; // Email input
+    $username = $_POST['username']; // Username input
     $password = $_POST['password'];
 
     try {
-        // Verify user credentials
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        // Check if both email and username match a valid user
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND username = ?");
+        $stmt->execute([$email, $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && password_verify($password, $user['password_hash'])) {
-            // User found and password matches, generate OTP
-            $user_id = $user['id'];
-            $otp = rand(100000, 999999);
-            
-            
-            $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
-            $stmt->execute([$user_id, $otp]);
+        // Check if user exists and match password
+        if ($user) {
+            if (password_verify($password, $user['password_hash'])) {
+                // Both email/username and password are valid
+                $user_id = $user['id'];
+                $otp = rand(100000, 999999);
 
-            // Send OTP to the user
-            if (sendEmail($email, $otp)) {
-                $_SESSION['user_id'] = $user_id; 
-                header("Location: verify_login_otp.php"); 
-                exit();
+                // Insert OTP into the database
+                $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
+                $stmt->execute([$user_id, $otp]);
+
+                // Send OTP to the user email
+                if (sendEmail($user['email'], $otp)) {
+                    $_SESSION['user_id'] = $user_id;
+                    header("Location: verify_login_otp.php");
+                    exit();
+                } else {
+                    $message = 'Failed to send OTP. Please try again.';
+                }
             } else {
-                $message = 'Failed to send OTP. Please try again.';
+                $message = 'Invalid password.';
             }
         } else {
-            $message = 'Invalid email or password.';
+            // If no match for both email and username
+            $message = 'Invalid email or username.';
         }
     } catch (PDOException $e) {
         $message = 'Error: ' . $e->getMessage();
@@ -43,33 +50,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-</head>
-<body>
-<div class="container mt-5">
-    <h2>Login</h2>
-    <form method="POST" action="login.php">
-        <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        function validateForm() {
+            let isValid = true;
 
-        <p class="mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
-    </form>
-    <?php if ($message): ?>
-        <div class="alert alert-danger mt-3">
-            <?= htmlspecialchars($message) ?>
-        </div>
-    <?php endif; ?>
-</div>
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            if (email.value.trim() === '') {
+                emailError.textContent = 'Email is required.';
+                isValid = false;
+            } else {
+                emailError.textContent = '';
+            }
+
+            // Validate username
+            const username = document.getElementById('username');
+            const usernameError = document.getElementById('usernameError');
+            if (username.value.trim() === '') {
+                usernameError.textContent = 'Username is required.';
+                isValid = false;
+            } else {
+                usernameError.textContent = '';
+            }
+
+            // Validate password
+            const password = document.getElementById('password');
+            const passwordError = document.getElementById('passwordError');
+            if (password.value.trim() === '') {
+                passwordError.textContent = 'Password is required.';
+                isValid = false;
+            } else {
+                passwordError.textContent = '';
+            }
+
+            return isValid;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form onsubmit="return validateForm()" method="POST" action="">
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email">
+                <div id="emailError" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username">
+                <div id="usernameError" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password">
+                <div id="passwordError" class="text-danger"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+
+            <p class="mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
+        </form>
+        <?php if ($message): ?>
+            <div class="alert alert-danger mt-3">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
+    </div>
 </body>
+
 </html>

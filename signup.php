@@ -10,22 +10,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
     try {
-        // Insert user
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $email, $password]);
-        $user_id = $conn->lastInsertId();
+        // Check if the username or email already exists
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+        $existingCount = $stmt->fetchColumn();
 
-        
-        $otp = rand(100000, 999999);
-        $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
-        $stmt->execute([$user_id, $otp]);
-
-        // Send OTP email
-        if (sendEmail($email, $otp)) {
-            header("Location: verify_otp.php?type=signup&user_id=$user_id");
-            exit();
+        if ($existingCount > 0) {
+            $message = '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
         } else {
-            $message = 'Failed to send OTP. Please try again.';
+            // Insert user
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+            $stmt->execute([$username, $email, $password]);
+            $user_id = $conn->lastInsertId();
+
+            // Generate OTP
+            $otp = rand(100000, 999999);
+            $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
+            $stmt->execute([$user_id, $otp]);
+
+            // Send OTP email
+            if (sendEmail($email, $otp)) {
+                header("Location: verify_otp.php?type=signup&user_id=$user_id");
+                exit();
+            } else {
+                $message = 'Failed to send OTP. Please try again.';
+            }
         }
     } catch (PDOException $e) {
         $message = 'Error: ' . $e->getMessage();
@@ -35,41 +44,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Signup Page HTML -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-    <div class="card mx-auto" style="max-width: 500px;">
-        <div class="card-header text-center"><h4>Signup</h4></div>
-        <div class="card-body">
-            <?php if ($message): ?>
-                <div class="alert alert-danger"><?php echo $message; ?></div>
-            <?php endif; ?>
-            <form method="POST" action="">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        function validateForm() {
+            let isValid = true;
 
-                <div class="text-center mt-3">
-                    <a href="login.php">Already have an account? Login</a>
-                </div>
-            </form>
-        </div>
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email.value)) {
+                emailError.textContent = 'Please enter a valid email address.';
+                isValid = false;
+            } else {
+                emailError.textContent = '';
+            }
+
+            // Validate username
+            const username = document.getElementById('username');
+            const usernameError = document.getElementById('usernameError');
+            if (username.value.length < 3 || username.value.length > 20) {
+                usernameError.textContent = 'Username must be between 3 and 20 characters.';
+                isValid = false;
+            } else {
+                usernameError.textContent = '';
+            }
+
+            // Validate password
+            const password = document.getElementById('password');
+            const passwordError = document.getElementById('passwordError');
+            const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+            if (!passwordPattern.test(password.value)) {
+                passwordError.textContent = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
+                isValid = false;
+            } else {
+                passwordError.textContent = '';
+            }
+
+            return isValid;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Sign Up</h2>
+        <form onsubmit="return validateForm()" method="POST" action="">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+                <div id="usernameError" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div id="emailError" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+                <div id="passwordError" class="text-danger"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+            
+
+            <p class="mt-3">Already have an account? <a href="login.php">Login</a></p>
+        </form>
+        <p class="mt-3"><?php echo $message; ?></p>
     </div>
-</div>
 </body>
+
 </html>
