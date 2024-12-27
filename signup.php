@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $existingCount = $stmt->fetchColumn();
 
         if ($existingCount > 0) {
-            $message = '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
+            $message = '<div class=\"text-danger\">Username or email already in use. Please choose a different one.</div>';
         } else {
             // Insert user
             $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!-- Signup Page HTML -->
 <!DOCTYPE html>
 <html lang="en">
@@ -78,8 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Validate password
             const password = document.getElementById('password');
             const passwordError = document.getElementById('passwordError');
-            const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
-            if (!passwordPattern.test(password.value)) {
+            const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+            if (!password.value.match(passwordPattern)) {
                 passwordError.textContent = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
                 isValid = false;
             } else {
@@ -111,8 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div id="passwordError" class="text-danger"></div>
             </div>
             <button type="submit" class="btn btn-primary">Sign Up</button>
-            
-
             <p class="mt-3">Already have an account? <a href="login.php">Login</a></p>
         </form>
         <p class="mt-3"><?php echo $message; ?></p>
