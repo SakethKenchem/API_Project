@@ -5,47 +5,55 @@ require 'send_email.php';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
 
-    try {
-        // Check if the username or email already exists
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
-        $stmt->execute([$username, $email]);
-        $existingCount = $stmt->fetchColumn();
+    // Basic server-side validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = '<div class="text-danger">Invalid email format.</div>';
+    } elseif (strlen($username) < 3 || strlen($username) > 20) {
+        $message = '<div class="text-danger">Username must be between 3 and 20 characters.</div>';
+    } elseif (strlen($password) < 8) {
+        $message = '<div class="text-danger">Password must be at least 8 characters long.</div>';
+    } else {
+        try {
+            // Check if the username or email already exists
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
+            $stmt->execute([$username, $email]);
+            $existingCount = $stmt->fetchColumn();
 
-        if ($existingCount > 0) {
-            $message = '<div class=\"text-danger\">Username or email already in use. Please choose a different one.</div>';
-        } else {
-            // Insert user
-            $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
-            $stmt->execute([$username, $email, $password]);
-            $user_id = $conn->lastInsertId();
-
-            // Generate OTP
-            $otp = rand(100000, 999999);
-            $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
-            $stmt->execute([$user_id, $otp]);
-
-            // Send OTP email
-            if (sendEmail($email, $otp)) {
-                header("Location: verify_otp.php?type=signup&user_id=$user_id");
-                exit();
+            if ($existingCount > 0) {
+                $message = '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
             } else {
-                $message = 'Failed to send OTP. Please try again.';
+                // Hash the password and insert user
+                $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+                $stmt->execute([$username, $email, $passwordHash]);
+                $user_id = $conn->lastInsertId();
+
+                // Generate OTP and send email
+                $otp = rand(100000, 999999);
+                $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
+                $stmt->execute([$user_id, $otp]);
+
+                if (sendEmail($email, $otp)) {
+                    header("Location: verify_otp.php?type=signup&user_id=$user_id");
+                    exit();
+                } else {
+                    $message = '<div class="text-danger">Failed to send OTP. Please try again.</div>';
+                }
             }
+        } catch (PDOException $e) {
+            error_log('Database error: ' . $e->getMessage());
+            $message = '<div class="text-danger">An error occurred. Please try again later.</div>';
         }
-    } catch (PDOException $e) {
-        $message = 'Error: ' . $e->getMessage();
     }
 }
 ?>
 
-<!-- Signup Page HTML -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,9 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Validate password
             const password = document.getElementById('password');
             const passwordError = document.getElementById('passwordError');
-            const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-            if (!password.value.match(passwordPattern)) {
-                passwordError.textContent = 'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
+            if (password.value.length < 8) {
+                passwordError.textContent = 'Password must be at least 8 characters long.';
                 isValid = false;
             } else {
                 passwordError.textContent = '';
@@ -91,7 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 </head>
-
 <body>
     <div class="container">
         <h2>Sign Up</h2>
@@ -117,5 +123,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="mt-3"><?php echo $message; ?></p>
     </div>
 </body>
-
 </html>
