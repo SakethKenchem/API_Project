@@ -1,6 +1,4 @@
 <?php
-
-
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -8,24 +6,39 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+require 'db.php';
+
+$user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT username FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    // If user not found, log out and redirect to login page
+    header('Location: logout.php');
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
+
 <body>
-<div class="container mt-5">
-    <div class="text-center">
-        <h1>Welcome to Your Dashboard</h1>
+    <div class="container mt-5">
+        <div class="text-center">
+            <h1>Welcome to Your Dashboard, <?php echo ($user['username']); ?>!</h1>
+        </div>
+        <div class="d-flex justify-content-center mt-5">
+            <a href="logout.php" class="btn btn-danger">Logout</a>
+        </div>
     </div>
-    <div class="d-flex justify-content-center mt-5">
-        <a href="logout.php" class="btn btn-danger">Logout</a>
-    </div>
-</div>
 </body>
+
 </html>
