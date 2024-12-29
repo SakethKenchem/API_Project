@@ -1,5 +1,7 @@
 <?php
+session_name("user_session");
 session_start();
+
 
 require 'db.php';
 require 'send_email.php';
@@ -25,6 +27,7 @@ class Login
             $this->saveOtp($user['id'], $otp);
             if ($this->sendOtp($user['email'], $otp)) {
                 $_SESSION['user_id'] = $user['id'];
+                $_SESSION['role'] = 'user';
                 header("Location: verify_login_otp.php");
                 exit();
             } else {

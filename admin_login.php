@@ -1,5 +1,7 @@
 <?php
+session_name("admin_session");
 session_start();
+
 require_once 'db.php';
 
 class AdminLogin {
@@ -17,6 +19,7 @@ class AdminLogin {
         if ($admin && password_verify($password, $admin['password'])) {
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_email'] = $admin['email'];
+            $_SESSION['role'] = 'admin';
             header("Location: admin_dashboard.php");
             exit();
         }

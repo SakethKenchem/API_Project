@@ -1,4 +1,5 @@
 <?php
+session_name("user_session");
 session_start();
 require 'db.php'; 
 require 'send_email.php'; 
