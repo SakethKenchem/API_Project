@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,30 +98,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return isValid;
         }
     </script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+            height: 45px;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .text-danger {
+            font-size: 0.875rem;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
-        <h2>Sign Up</h2>
-        <form onsubmit="return validateForm()" method="POST" action="">
-            <div class="form-group">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-                <div id="usernameError" class="text-danger"></div>
-            </div>
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-                <div id="emailError" class="text-danger"></div>
-            </div>
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-                <div id="passwordError" class="text-danger"></div>
-            </div>
-            <button type="submit" class="btn btn-primary">Sign Up</button>
-            <p class="mt-3">Already have an account? <a href="login.php">Login</a></p>
-        </form>
-        <p class="mt-3"><?php echo $message; ?></p>
+        <div class="form-wrapper">
+            <h2>Sign Up</h2>
+            <form onsubmit="return validateForm()" method="POST" action="">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    <div id="usernameError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div id="emailError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div id="passwordError" class="text-danger"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+                <p class="mt-3 text-center">Already have an account? <a href="login.php">Login</a></p>
+            </form>
+            <p class="mt-3"><?php echo $message; ?></p>
+        </div>
     </div>
 </body>
+
 </html>

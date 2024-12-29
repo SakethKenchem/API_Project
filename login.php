@@ -4,15 +4,18 @@ session_start();
 require 'db.php';
 require 'send_email.php';
 
-class Login {
+class Login
+{
     private $pdo;
     private $message;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function authenticate($email, $username, $password) {
+    public function authenticate($email, $username, $password)
+    {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? AND username = ?");
         $stmt->execute([$email, $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -32,16 +35,19 @@ class Login {
         }
     }
 
-    private function saveOtp($userId, $otp) {
+    private function saveOtp($userId, $otp)
+    {
         $stmt = $this->pdo->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
         $stmt->execute([$userId, $otp]);
     }
 
-    private function sendOtp($email, $otp) {
+    private function sendOtp($email, $otp)
+    {
         return sendEmail($email, $otp);
     }
 
-    public function getMessage() {
+    public function getMessage()
+    {
         return $this->message;
     }
 }
@@ -81,35 +87,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return isValid;
         }
     </script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+            height: 45px;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
-        <h2>Login</h2>
-        <form onsubmit="return validateForm()" method="POST">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
-                <div id="emailError" class="text-danger"></div>
-            </div>
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username">
-                <div id="usernameError" class="text-danger"></div>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password">
-                <div id="passwordError" class="text-danger"></div>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-            <p class="mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
-        </form>
-        <?php if ($message = $login->getMessage()): ?>
-            <div class="alert alert-danger mt-3">
-                <?= htmlspecialchars($message) ?>
-            </div>
-        <?php endif; ?>
+        <div class="form-wrapper">
+            <h2>Login</h2>
+            <form onsubmit="return validateForm()" method="POST">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                    <div id="emailError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username">
+                    <div id="usernameError" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                    <div id="passwordError" class="text-danger"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="mt-3 text-center">Don't have an account? <a href="signup.php">Sign up</a></p>
+            </form>
+            <?php if ($message = $login->getMessage()): ?>
+                <div class="alert alert-danger mt-3">
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </body>
 
