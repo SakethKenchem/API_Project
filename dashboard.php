@@ -32,13 +32,12 @@ if (!$user) {
 </head>
 
 <body>
+    <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <div class="text-center">
             <h1>Welcome to Your Dashboard, <?php echo ($user['username']); ?>!</h1>
         </div>
-        <div class="d-flex justify-content-center mt-5">
-            <a href="logout.php" class="btn btn-danger">Logout</a>
-        </div>
+
     </div>
 </body>
 
