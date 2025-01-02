@@ -72,11 +72,11 @@ function renderTableRows($users)
     } else {
         foreach ($users as $user) {
             echo "<tr>
-                <td>" . htmlspecialchars($user['id']) . "</td>
-                <td>" . htmlspecialchars($user['username']) . "</td>
-                <td>" . htmlspecialchars($user['email']) . "</td>
-                <td>" . htmlspecialchars($user['created_at']) . "</td>
-                <td><button class='btn btn-danger btn-sm delete-btn' data-id='" . htmlspecialchars($user['id']) . "'>Delete</button></td>
+                <td>" . ($user['id']) . "</td>
+                <td>" . ($user['username']) . "</td>
+                <td>" . ($user['email']) . "</td>
+                <td>" . ($user['created_at']) . "</td>
+                <td><button class='btn btn-danger btn-sm delete-btn' data-id='" . ($user['id']) . "'>Delete</button></td>
             </tr>";
         }
     }
