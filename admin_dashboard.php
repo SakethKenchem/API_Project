@@ -97,8 +97,10 @@ function renderTableRows($users)
 <body>
     <div class="container mt-5">
         <h2>User Dashboard</h2>
+        <!--logout button-->
+        <a href="logout.php" class="btn btn-danger" style="margin-bottom: 20px;">Logout</a><br>
         <div class="form-group">
-            <input type="text" id="search" class="form-control" placeholder="Search users by ID, username, or email">
+            <input style="margin-bottom: 10px;" type="text" id="search" class="form-control" placeholder="Search users by ID, username, or email">
         </div>
 
         <table class="table table-bordered">
