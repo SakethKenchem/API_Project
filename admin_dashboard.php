@@ -3,14 +3,17 @@ session_name("admin_session");
 session_start();
 require_once 'db.php';
 
-class User {
+class User
+{
     private $conn;
 
-    public function __construct($connection) {
+    public function __construct($connection)
+    {
         $this->conn = $connection;
     }
 
-    public function fetchUsers($search = "") {
+    public function fetchUsers($search = "")
+    {
         try {
             $query = "SELECT id, username, email, created_at FROM users";
             if ($search) {
@@ -28,7 +31,8 @@ class User {
         }
     }
 
-    public function deleteUser($id) {
+    public function deleteUser($id)
+    {
         try {
             $stmt = $this->conn->prepare("DELETE FROM users WHERE id = :id");
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -61,7 +65,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     exit;
 }
 
-function renderTableRows($users) {
+function renderTableRows($users)
+{
     if (count($users) === 0) {
         echo "<tr><td colspan='5' class='text-center'>No results found</td></tr>";
     } else {
@@ -80,20 +85,22 @@ function renderTableRows($users) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
+
 <body>
     <div class="container mt-5">
         <h2>User Dashboard</h2>
         <div class="form-group">
             <input type="text" id="search" class="form-control" placeholder="Search users by ID, username, or email">
         </div>
-        
+
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -118,7 +125,10 @@ function renderTableRows($users) {
                 $.ajax({
                     url: 'admin_dashboard.php',
                     method: 'GET',
-                    data: { search: searchValue, ajax: '1' },
+                    data: {
+                        search: searchValue,
+                        ajax: '1'
+                    },
                     success: function(data) {
                         $('#userTable').html(data);
                     }
@@ -132,19 +142,21 @@ function renderTableRows($users) {
                     $.ajax({
                         url: 'admin_dashboard.php',
                         method: 'POST',
-                        data: { action: 'delete', id: userId },
+                        data: {
+                            action: 'delete',
+                            id: userId
+                        },
                         dataType: 'json',
                         success: function(response) {
-                            console.log(response); // Log response for debugging
+
                             if (response.success) {
                                 alert('User deleted successfully');
-                                $('#search').trigger('keyup'); // Refresh the table
+                                $('#search').trigger('keyup');
                             } else {
                                 alert('Error: ' + (response.error || 'Failed to delete user'));
                             }
                         },
                         error: function(xhr, status, error) {
-                            console.error('AJAX Error:', error); // Log error for debugging
                             alert('An error occurred while trying to delete the user.');
                         }
                     });
@@ -153,4 +165,5 @@ function renderTableRows($users) {
         });
     </script>
 </body>
+
 </html>
