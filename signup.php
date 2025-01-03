@@ -147,6 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
+    <h2>Not Instagram</h2>
     <div class="container">
         <div class="form-wrapper">
             <h2>Sign Up</h2>
