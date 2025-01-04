@@ -1,6 +1,13 @@
 <?php
 session_name("admin_session");
 session_start();
+
+// Ensure the user is logged in and has an 'admin' role
+if (!isset($_SESSION['admin_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: admin_login.php'); // Redirect if unauthorized
+    exit();
+}
+
 require_once 'db.php';
 
 class User
@@ -45,16 +52,15 @@ class User
 
 $user = new User($conn);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action']) && $_POST['action'] === 'delete') {
-        $id = intval($_POST['id']);
-        if ($user->deleteUser($id)) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Failed to delete user']);
-        }
-        exit;
+// Handle AJAX requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $id = intval($_POST['id']);
+    if ($user->deleteUser($id)) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Failed to delete user']);
     }
+    exit();
 }
 
 $search = isset($_GET['search']) ? $_GET['search'] : "";
@@ -62,21 +68,21 @@ $users = $user->fetchUsers($search);
 
 if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     renderTableRows($users);
-    exit;
+    exit();
 }
 
 function renderTableRows($users)
 {
-    if (count($users) === 0) {
+    if (empty($users)) {
         echo "<tr><td colspan='5' class='text-center'>No results found</td></tr>";
     } else {
         foreach ($users as $user) {
             echo "<tr>
-                <td>" . ($user['id']) . "</td>
-                <td>" . ($user['username']) . "</td>
-                <td>" . ($user['email']) . "</td>
-                <td>" . ($user['created_at']) . "</td>
-                <td><button class='btn btn-danger btn-sm delete-btn' data-id='" . ($user['id']) . "'>Delete</button></td>
+                <td>" . htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') . "</td>
+                <td>" . htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') . "</td>
+                <td>" . htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8') . "</td>
+                <td>" . htmlspecialchars($user['created_at'], ENT_QUOTES, 'UTF-8') . "</td>
+                <td><button class='btn btn-danger btn-sm delete-btn' data-id='" . htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') . "'>Delete</button></td>
             </tr>";
         }
     }
@@ -89,24 +95,23 @@ function renderTableRows($users)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <style>
-        .form-control{
+        .form-control {
             width: 50%;
         }
-
     </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h2>User Dashboard</h2>
-        <!--logout button-->
-        <a href="logout.php" class="btn btn-danger" style="margin-bottom: 20px;">Logout</a><br>
+        <h2>Admin Dashboard</h2>
+        <a href="admin_logout.php" class="btn btn-danger mb-3">Logout</a>
+
         <div class="form-group">
-            <input style="margin-bottom: 10px;" type="text" id="search" class="form-control" placeholder="Search users by ID, username, or email">
+            <input type="text" id="search" class="form-control mb-3" placeholder="Search users by ID, username, or email">
         </div>
 
         <table class="table table-bordered">
@@ -129,7 +134,7 @@ function renderTableRows($users)
         $(document).ready(function() {
             // Search functionality
             $('#search').on('keyup', function() {
-                var searchValue = $(this).val();
+                const searchValue = $(this).val();
                 $.ajax({
                     url: 'admin_dashboard.php',
                     method: 'GET',
@@ -145,31 +150,29 @@ function renderTableRows($users)
 
             // Delete functionality
             $(document).on('click', '.delete-btn', function() {
-                var userId = $(this).data('id');
-                if (confirm('Are you sure you want to delete this user?')) {
-                    $.ajax({
-                        url: 'admin_dashboard.php',
-                        method: 'POST',
-                        data: {
-                            action: 'delete',
-                            id: userId
-                        },
-                        dataType: 'json',
-                        success: function(response) {
-
-                            if (response.success) {
-                                alert('User deleted successfully');
-                                $('#search').trigger('keyup');
-                            } else {
-                                alert('Error: ' + (response.error || 'Failed to delete user'));
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            alert('An error occurred while trying to delete the user.');
+                const userId = $(this).data('id');
+                $.ajax({
+                    url: 'admin_dashboard.php',
+                    method: 'POST',
+                    data: {
+                        action: 'delete',
+                        id: userId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#search').trigger('keyup'); // Refresh the table
+                        } else {
+                            alert('Error: ' + (response.error || 'Failed to delete user'));
                         }
-                    });
-                }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', xhr.responseText || error);
+                        alert('An error occurred. Please try again.');
+                    }
+                });
             });
+
         });
     </script>
 </body>

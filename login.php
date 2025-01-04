@@ -130,11 +130,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
             margin-bottom: 20px;
         }
+
+        h3 {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
-    <h2>Not Instagram</h2>
+    <h3>Not Instagram</h3>
     <div class="container">
         <div class="form-wrapper">
             <h2>Login</h2>
