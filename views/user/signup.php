@@ -5,7 +5,7 @@ require 'vendor/autoload.php';
 require '../../includes/db.php';
 require '../../includes/send_email.php';
 
-class UserRegistration {
+class UserSignup {
     private $conn;
     private $message;
 
@@ -35,7 +35,7 @@ class UserRegistration {
             return '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
         }
 
-        // Hash the password
+        
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
         try {
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    $userRegistration = new UserRegistration($conn);
+    $userRegistration = new UserSignup($conn);
     $message = $userRegistration->registerUser($username, $email, $password);
 }
 ?>
@@ -84,7 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
+    <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <script>
         function validateForm() {
             let isValid = true;
