@@ -2,51 +2,56 @@
 require 'db.php';
 require 'send_email.php';
 
+class User {
+    private $conn;
+    private $username;
+    private $email;
+    private $password;
+
+    public function __construct($conn, $username, $email, $password) {
+        $this->conn = $conn;
+        $this->username = trim($username);
+        $this->email = trim($email);
+        $this->password = $password;
+    }
+
+    public function validate() {
+        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            return '<div class="text-danger">Invalid email format.</div>';
+        } elseif (strlen($this->username) < 3 || strlen($this->username) > 20) {
+            return '<div class="text-danger">Username must be between 3 and 20 characters.</div>';
+        } elseif (strlen($this->password) < 8) {
+            return '<div class="text-danger">Password must be at least 8 characters long.</div>';
+        }
+        return '';
+    }
+
+    public function userExists() {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$this->username, $this->email]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function save() {
+        $passwordHash = password_hash($this->password, PASSWORD_BCRYPT);
+        $stmt = $this->conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+        $stmt->execute([$this->username, $this->email, $passwordHash]);
+        return $this->conn->lastInsertId();
+    }
+}
+
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+    $user = new User($conn, $_POST['username'], $_POST['email'], $_POST['password']);
+    $message = $user->validate();
 
-    // Basic server-side validation
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = '<div class="text-danger">Invalid email format.</div>';
-    } elseif (strlen($username) < 3 || strlen($username) > 20) {
-        $message = '<div class="text-danger">Username must be between 3 and 20 characters.</div>';
-    } elseif (strlen($password) < 8) {
-        $message = '<div class="text-danger">Password must be at least 8 characters long.</div>';
-    } else {
-        try {
-            // Check if the username or email already exists
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
-            $stmt->execute([$username, $email]);
-            $existingCount = $stmt->fetchColumn();
-
-            if ($existingCount > 0) {
-                $message = '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
-            } else {
-                // Hash the password and insert user
-                $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
-                $stmt->execute([$username, $email, $passwordHash]);
-                $user_id = $conn->lastInsertId();
-
-                // Generate OTP and send email
-                $otp = rand(100000, 999999);
-                $stmt = $conn->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
-                $stmt->execute([$user_id, $otp]);
-
-                if (sendEmail($email, $otp)) {
-                    header("Location: verify_otp.php?type=signup&user_id=$user_id");
-                    exit();
-                } else {
-                    $message = '<div class="text-danger">Failed to send OTP. Please try again.</div>';
-                }
-            }
-        } catch (PDOException $e) {
-            error_log('Database error: ' . $e->getMessage());
-            $message = '<div class="text-danger">An error occurred. Please try again later.</div>';
+    if (empty($message)) {
+        if ($user->userExists()) {
+            $message = '<div class="text-danger">Username or email already in use. Please choose a different one.</div>';
+        } else {
+            $user_id = $user->save();
+            
         }
     }
 }
@@ -116,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             max-width: 400px;
             padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(206, 7, 7, 0.1);
             background-color: #fff;
             border-radius: 8px;
         }

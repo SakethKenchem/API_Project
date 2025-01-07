@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             max-width: 400px;
             padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(203, 11, 11, 0.1);
             background-color: #fff;
             border-radius: 8px;
         }
