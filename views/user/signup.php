@@ -86,82 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Sign Up</title>
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <script>
-        function validateForm() {
-            let isValid = true;
 
-            // Validate email
-            const email = document.getElementById('email');
-            const emailError = document.getElementById('emailError');
-            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailPattern.test(email.value)) {
-                emailError.textContent = 'Please enter a valid email address.';
-                isValid = false;
-            } else {
-                emailError.textContent = '';
-            }
+    <link href="../../assets/css/signupform.css" rel="stylesheet">
 
-            // Validate username
-            const username = document.getElementById('username');
-            const usernameError = document.getElementById('usernameError');
-            if (username.value.length < 3 || username.value.length > 20) {
-                usernameError.textContent = 'Username must be between 3 and 20 characters.';
-                isValid = false;
-            } else {
-                usernameError.textContent = '';
-            }
-
-            // Validate password
-            const password = document.getElementById('password');
-            const passwordError = document.getElementById('passwordError');
-            if (password.value.length < 8) {
-                passwordError.textContent = 'Password must be at least 8 characters long.';
-                isValid = false;
-            } else {
-                passwordError.textContent = '';
-            }
-
-            return isValid;
-        }
-    </script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-        }
-        .form-wrapper {
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-            border-radius: 8px;
-        }
-        .form-control {
-            margin-bottom: 15px;
-            height: 45px;
-        }
-        .form-group label {
-            margin-bottom: 5px;
-        }
-        .btn-primary {
-            width: 100%;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .text-danger {
-            font-size: 0.875rem;
-        }
-    </style>
 </head>
 <body>
     <h2>Not Instagram</h2>
@@ -187,8 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="btn btn-primary">Sign Up</button>
                 <p class="mt-3 text-center">Already have an account? <a href="login.php">Login</a></p>
             </form>
-            <p class="mt-3"><?php echo $message; ?></p>
+            <p class="mt-3" style="color: red; font-size:x-large;"><?php echo $message; ?></p>
         </div>
     </div>
 </body>
+
+<script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </html>

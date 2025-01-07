@@ -75,68 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login</title>
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <script>
-        function validateForm() {
-            let isValid = true;
 
-            const email = document.getElementById('email');
-            const username = document.getElementById('username');
-            const password = document.getElementById('password');
-
-            document.getElementById('emailError').textContent = email.value.trim() ? '' : 'Email is required.';
-            document.getElementById('usernameError').textContent = username.value.trim() ? '' : 'Username is required.';
-            document.getElementById('passwordError').textContent = password.value.trim() ? '' : 'Password is required.';
-
-            if (!email.value.trim() || !username.value.trim() || !password.value.trim()) isValid = false;
-
-            return isValid;
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-        }
-
-        .form-wrapper {
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            box-shadow: 0 4px 8px rgba(203, 11, 11, 0.1);
-            background-color: #fff;
-            border-radius: 8px;
-        }
-
-        .form-control {
-            margin-bottom: 15px;
-            height: 45px;
-        }
-
-        .form-group label {
-            margin-bottom: 5px;
-        }
-
-        .btn-primary {
-            width: 100%;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h3 {
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/loginform.css">
 </head>
 
 <body>
@@ -172,4 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 
+<script src="../../assets/js/loginform.js"></script>
 </html>
+

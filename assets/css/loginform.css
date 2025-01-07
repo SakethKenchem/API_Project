@@ -1,0 +1,42 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(203, 11, 11, 0.1);
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    height: 45px;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+}
+
+.btn-primary {
+    width: 100%;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    text-align: center;
+}
