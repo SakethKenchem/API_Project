@@ -2,15 +2,15 @@
 session_name("admin_session");
 session_start();
 
-// Ensure the user is logged in and has an 'admin' role
+
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: admin_login.php'); // Redirect if unauthorized
+    header('Location: admin_login.php'); 
     exit();
 }
 
 require '../../includes/db.php';
 
-class Admin
+class AdminDashboard
 {
     private $conn;
 
@@ -50,9 +50,9 @@ class Admin
     }
 }
 
-$user = new Admin($conn);
+$user = new AdminDashboard($conn);
 
-// Handle AJAX requests
+// Handles AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $id = intval($_POST['id']);
     if ($user->deleteUser($id)) {
