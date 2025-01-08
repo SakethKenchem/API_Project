@@ -64,7 +64,7 @@ $user = $dashboard->getUser();
 <body>
     <div class="container mt-5">
         <div class="text-center">
-            <h1>Welcome to Your Dashboard, <?php echo htmlspecialchars($user['username']); ?>!</h1>
+            <h1>Welcome, <?php echo htmlspecialchars($user['username']); ?>!</h1>
         </div>
     </div>
 </body>

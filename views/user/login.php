@@ -114,4 +114,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script src="../../assets/js/loginform.js"></script>
 </html>
-
