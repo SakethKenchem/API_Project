@@ -68,12 +68,12 @@ $user = new Navbar($conn);
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <?php if ($user->isLoggedIn()): ?>
                         <li class="nav-item">
-                            <a class="nav-link text-danger" href="logout.php">Logout</a>
+                            <a class="nav-link" href="<?= ($user->getProfileLink()) ?>">
+                                <?= ($user->getUsername()) ?>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="<?= htmlspecialchars($user->getProfileLink()) ?>">
-                                <?= htmlspecialchars($user->getUsername()) ?>
-                            </a>
+                            <a class="nav-link text-danger" href="logout.php">Logout</a>
                         </li>
                     <?php endif; ?>
                 </ul>
