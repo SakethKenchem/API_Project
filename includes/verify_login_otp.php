@@ -3,8 +3,8 @@ session_name("user_session");
 session_start();
 
 require 'C:/Apache24/htdocs/API_Project/config.php';
-require 'db.php'; 
-require 'send_email.php'; 
+require 'db.php';
+require 'send_email.php';
 
 class LoginOTPVerification {
     private $conn;
@@ -28,16 +28,35 @@ class LoginOTPVerification {
         }
 
         try {
-            $stmt = $this->conn->prepare("SELECT otp_code FROM otp_codes WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
+            // Fetch the most recent OTP code from the database for this user
+            $stmt = $this->conn->prepare("SELECT otp_code, created_at FROM otp_codes WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
             $stmt->execute([$this->user_id]);
             $otp_record = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($otp_record && $otp_record['otp_code'] === $otp_entered) {
-                $_SESSION['is_logged_in'] = true;
-                header("Location: /API_Project/views/user/dashboard.php");
-                exit();
+            if ($otp_record) {
+                // Trim any extra spaces from the entered OTP and the stored OTP
+                $otp_entered = trim($otp_entered);
+                $stored_otp = trim($otp_record['otp_code']);
+
+                // Check for expiration: OTP expires after 5 minutes
+                $otp_expiration_time = 5 * 60; // 5 minutes
+                $created_at = strtotime($otp_record['created_at']);
+                $current_time = time();
+
+                if (($current_time - $created_at) <= $otp_expiration_time) {
+                    // Compare the entered OTP with the stored OTP
+                    if ($stored_otp === $otp_entered) {
+                        $_SESSION['is_logged_in'] = true;
+                        header("Location: /API_Project/views/user/dashboard.php");
+                        exit();
+                    } else {
+                        $this->message = 'Invalid OTP. Please try again.';
+                    }
+                } else {
+                    $this->message = 'OTP expired. Please request a new one.';
+                }
             } else {
-                $this->message = 'Invalid OTP. Please try again.';
+                $this->message = 'No OTP record found. Please request a new OTP.';
             }
         } catch (PDOException $e) {
             $this->message = 'Error: ' . $e->getMessage();
@@ -57,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $message = $otpVerification->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>

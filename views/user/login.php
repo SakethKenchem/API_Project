@@ -19,20 +19,23 @@ class Login
 
     public function authenticate($email, $username, $password)
     {
+        // Fetch user by email and username
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? AND username = ?");
         $stmt->execute([$email, $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            // Generate OTP
             $otp = rand(100000, 999999);
             $this->saveOtp($user['id'], $otp);
+
             if ($this->sendOtp($user['email'], $otp)) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = 'user';
                 header("Location: ../../includes/verify_login_otp.php");
                 exit();
             } else {
-                $this->message = 'Failed to send OTP. Try again.';
+                $this->message = 'Failed to send OTP. Please try again.';
             }
         } else {
             $this->message = 'Invalid email, username, or password.';
@@ -41,12 +44,13 @@ class Login
 
     private function saveOtp($userId, $otp)
     {
-        $stmt = $this->pdo->prepare("INSERT INTO otp_codes (user_id, otp_code) VALUES (?, ?)");
+        $stmt = $this->pdo->prepare("INSERT INTO otp_codes (user_id, otp_code, created_at) VALUES (?, ?, NOW())");
         $stmt->execute([$userId, $otp]);
     }
 
     private function sendOtp($email, $otp)
     {
+        // Ensure you have a working sendEmail function
         return sendEmail($email, $otp);
     }
 
@@ -56,6 +60,7 @@ class Login
     }
 }
 
+// Initialize login
 $login = new Login($conn);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,17 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="../../assets/css/loginform.css">
 </head>
-
 <body>
     <h3>Not Instagram</h3>
     <div class="container">
@@ -87,17 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form onsubmit="return validateForm()" method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" name="email">
+                    <input type="email" class="form-control" id="email" name="email" required>
                     <div id="emailError" class="text-danger"></div>
                 </div>
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username" name="username">
+                    <input type="text" class="form-control" id="username" name="username" required>
                     <div id="usernameError" class="text-danger"></div>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" name="password">
+                    <input type="password" class="form-control" id="password" name="password" required>
                     <div id="passwordError" class="text-danger"></div>
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
@@ -105,12 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             <?php if ($message = $login->getMessage()): ?>
                 <div class="alert alert-danger mt-3">
-                    <?= ($message) ?>
+                    <?= $message ?>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </body>
-
 <script src="../../assets/js/loginform.js"></script>
 </html>

@@ -1,4 +1,5 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -10,10 +11,10 @@ function sendEmail($to, $otp)
     try {
         //Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';  
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 's.kenchem@gmail.com'; 
-        $mail->Password   = 'jncj pmsd ljkk savt';   
+        $mail->Username   = 's.kenchem@gmail.com';
+        $mail->Password   = 'lnwh csma yqir zuva';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -32,4 +33,3 @@ function sendEmail($to, $otp)
         return false;
     }
 }
-?>
