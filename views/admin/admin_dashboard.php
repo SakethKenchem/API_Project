@@ -1,179 +1,161 @@
 <?php
-session_name("admin_session");
 session_start();
-
-
-if (!isset($_SESSION['admin_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: admin_login.php'); 
-    exit();
-}
-
 require '../../includes/db.php';
+
+
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: admin_login.php');
+    exit;
+}
 
 class AdminDashboard
 {
     private $conn;
 
-    public function __construct($connection)
+    public function __construct($conn)
     {
-        $this->conn = $connection;
+        $this->conn = $conn;
     }
 
-    public function fetchUsers($search = "")
+
+    public function fetchUsers($search = '')
     {
-        try {
-            $query = "SELECT id, username, email, created_at FROM users";
-            if ($search) {
-                $query .= " WHERE id LIKE :search OR username LIKE :search OR email LIKE :search";
-            }
-            $stmt = $this->conn->prepare($query);
-            if ($search) {
-                $search = "%$search%";
-                $stmt->bindParam(':search', $search, PDO::PARAM_STR);
-            }
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
+        $query = "SELECT id, username, email FROM users";
+        if ($search) {
+            $query .= " WHERE username LIKE :search OR email LIKE :search";
         }
+        $stmt = $this->conn->prepare($query);
+        if ($search) {
+            $searchTerm = '%' . $search . '%';
+            $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
     public function deleteUser($id)
     {
-        try {
-            $stmt = $this->conn->prepare("DELETE FROM users WHERE id = :id");
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            return false;
-        }
+        $query = "DELETE FROM users WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 }
 
-$user = new AdminDashboard($conn);
+$dashboard = new AdminDashboard($conn);
 
-// Handles AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $id = intval($_POST['id']);
-    if ($user->deleteUser($id)) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Failed to delete user']);
-    }
-    exit();
+    $dashboard->deleteUser($id);
+    echo json_encode(['success' => true]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
+    $search = trim($_GET['search']);
+    $users = $dashboard->fetchUsers($search);
+    echo json_encode($users);
+    exit;
 }
 
-$search = isset($_GET['search']) ? $_GET['search'] : "";
-$users = $user->fetchUsers($search);
-
-if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
-    renderTableRows($users);
-    exit();
-}
-
-function renderTableRows($users)
-{
-    if (empty($users)) {
-        echo "<tr><td colspan='5' class='text-center'>No results found</td></tr>";
-    } else {
-        foreach ($users as $user) {
-            echo "<tr>
-                <td>" . htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') . "</td>
-                <td>" . htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') . "</td>
-                <td>" . htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8') . "</td>
-                <td>" . htmlspecialchars($user['created_at'], ENT_QUOTES, 'UTF-8') . "</td>
-                <td><button class='btn btn-danger btn-sm delete-btn' data-id='" . htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') . "'>Delete</button></td>
-            </tr>";
-        }
-    }
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <title>Admin Dashboard</title>
     <style>
-        .form-control {
-            width: 50%;
+        .delete-btn {
+            cursor: pointer;
+            color: red;
         }
     </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h2>Admin Dashboard</h2>
-        <a href="admin_logout.php" class="btn btn-danger mb-3">Logout</a>
+        <h3 class="mb-4">Welcome, <?= htmlspecialchars($_SESSION['admin_username']); ?>!</h3>
+        <a href="admin_logout.php" class="btn btn-secondary mb-4">Logout</a>
 
-        <div class="form-group">
-            <input type="text" id="search" class="form-control mb-3" placeholder="Search users by ID, username, or email">
+        <div class="mb-3">
+            <input type="text" id="search" class="form-control" placeholder="Search admins by username or email">
         </div>
-
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>Created At</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="userTable">
-                <?php renderTableRows($users); ?>
+            <tbody id="admin-table">
+
             </tbody>
         </table>
     </div>
 
+    <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Search functionality
-            $('#search').on('keyup', function() {
-                const searchValue = $(this).val();
-                $.ajax({
-                    url: 'admin_dashboard.php',
-                    method: 'GET',
-                    data: {
-                        search: searchValue,
-                        ajax: '1'
-                    },
-                    success: function(data) {
-                        $('#userTable').html(data);
-                    }
-                });
-            });
+        function fetchAdmins(search = '') {
+            $.ajax({
+                url: 'admin_dashboard.php',
+                type: 'GET',
+                data: {
+                    search: search
+                },
+                success: function(data) {
+                    const admins = JSON.parse(data);
+                    const adminTable = $('#admin-table');
+                    adminTable.empty();
 
-            // Delete functionality
-            $(document).on('click', '.delete-btn', function() {
-                const userId = $(this).data('id');
+                    if (admins.length === 0) {
+                        adminTable.append('<tr><td colspan="4" class="text-center">No records found</td></tr>');
+                    } else {
+                        admins.forEach(admin => {
+                            adminTable.append(`
+                            <tr>
+                                <td>${admin.id}</td>
+                                <td>${admin.username}</td>
+                                <td>${admin.email}</td>
+                                <td><span class="delete-btn" data-id="${admin.id}">Delete</span></td>
+                            </tr>
+                        `);
+                        });
+                    }
+                }
+            });
+        }
+
+
+        fetchAdmins();
+
+
+        $('#search').on('input', function() {
+            const search = $(this).val();
+            fetchAdmins(search);
+        });
+
+
+        $(document).on('click', '.delete-btn', function() {
+            if (confirm('Are you sure you want to delete this admin?')) {
+                const id = $(this).data('id');
                 $.ajax({
                     url: 'admin_dashboard.php',
-                    method: 'POST',
+                    type: 'POST',
                     data: {
                         action: 'delete',
-                        id: userId
+                        id: id
                     },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#search').trigger('keyup'); // Refresh the table
-                        } else {
-                            alert('Error: ' + (response.error || 'Failed to delete user'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', xhr.responseText || error);
-                        alert('An error occurred. Please try again.');
+                    success: function() {
+                        fetchAdmins();
                     }
                 });
-            });
-
+            }
         });
     </script>
 </body>

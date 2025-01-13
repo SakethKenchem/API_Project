@@ -1,41 +1,44 @@
 <?php
-session_name("admin_session");
 session_start();
-
 require '../../includes/db.php';
 
 class AdminLogin
 {
-    private $db;
+    private $conn;
 
-    public function __construct($db)
+    public function __construct($conn)
     {
-        $this->db = $db;
+        $this->conn = $conn;
     }
 
-    public function login($email, $password)
+    public function login($username, $password)
     {
-        $stmt = $this->db->prepare("SELECT * FROM admins WHERE email = :email");
-        $stmt->execute([':email' => $email]);
-        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+        $query = "SELECT * FROM admins WHERE username = :username";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($admin && password_verify($password, $admin['password'])) {
-            // Set session variables upon successful login
-            $_SESSION['admin_id'] = $admin['id'];
-            $_SESSION['admin_email'] = $admin['email'];
-            $_SESSION['role'] = 'admin'; // Assign the admin role
-            header("Location: ../../views/admin/admin_dashboard.php");
-            exit();
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['admin_id'] = $user['id'];
+            $_SESSION['admin_username'] = $user['username'];
+            return true;
         }
-        return "Invalid email or password!";
+        return false;
     }
 }
 
-$adminLogin = new AdminLogin($conn);
-
-$error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $error = $adminLogin->login($_POST['email'], $_POST['password']);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+
+    $auth = new AdminLogin($conn);
+    if ($auth->login($username, $password)) {
+        header('Location: admin_dashboard.php');
+        exit;
+    } else {
+        $error = 'Invalid username or password';
+    }
 }
 ?>
 
@@ -45,44 +48,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <title>Admin Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        h2 {
-            text-align: center;
-        }
-
-        body {
-            background-color: rgb(213, 222, 231);
-        }
-    </style>
 </head>
 
 <body>
-    <h2>Not Instagram Admin</h2>
-    <div class="container vh-100 d-flex justify-content-center align-items-center">
-        <div class="row w-100">
-            <div class="col-lg-4 col-md-6 mx-auto">
-                <form method="POST" class="p-4 border rounded bg-light">
-                    <h2 class="text-center mb-4">Admin Login</h2>
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger text-center">
-                            <?= htmlspecialchars($error) ?>
-                        </div>
-                    <?php endif; ?>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3>Admin Login</h3>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="card-body">
+                        <?php if (!empty($error)): ?>
+                            <div class="alert alert-danger" role="alert">
+                                <?= htmlspecialchars($error) ?>
+                            </div>
+                        <?php endif; ?>
+                        <form method="POST" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
+    <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
