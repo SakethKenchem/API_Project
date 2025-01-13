@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         <a href="admin_logout.php" class="btn btn-secondary mb-4">Logout</a>
 
         <div class="mb-3">
-            <input type="text" id="search" class="form-control" placeholder="Search admins by username or email">
+            <input type="text" id="search" class="form-control" placeholder="Search by username or email">
         </div>
         <table class="table table-bordered">
             <thead>

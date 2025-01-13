@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/loginform.css">
 </head>
+
 <body>
     <h3>Not Instagram</h3>
     <div class="container">
@@ -101,6 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" class="form-control" id="password" name="password" required>
                     <div id="passwordError" class="text-danger"></div>
                 </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="showPassword">
+                    <label class="form-check-label" for="showPassword">Show Password</label>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="mt-3 text-center">Don't have an account? <a href="../../views/user/signup.php">Sign up</a></p>
             </form>
@@ -113,4 +120,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 <script src="../../assets/js/loginform.js"></script>
+<script>
+    document.getElementById("showPassword").addEventListener("change", function() {
+        var passwordField = document.getElementById("password");
+        if (this.checked) {
+            passwordField.type = "text";  // Show password
+        } else {
+            passwordField.type = "password";  // Hide password
+        }
+    });
+</script>
+
 </html>

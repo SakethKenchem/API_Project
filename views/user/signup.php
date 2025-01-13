@@ -107,9 +107,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div id="emailError" class="text-danger"></div>
                 </div>
                 <div class="form-group">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                     <div id="passwordError" class="text-danger"></div>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="showPassword">
+                    <label class="form-check-label" for="showPassword">Show Password</label>
                 </div>
                 <button type="submit" class="btn btn-primary">Sign Up</button>
                 <p class="mt-3 text-center">Already have an account? <a href="login.php">Login</a></p>
@@ -120,4 +124,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById("showPassword").addEventListener("change", function() {
+        var passwordField = document.getElementById("password");
+        if (this.checked) {
+            passwordField.type = "text";  // Show password
+        } else {
+            passwordField.type = "password";  // Hide password
+        }
+    });
+</script>
 </html>
