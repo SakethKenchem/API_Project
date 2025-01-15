@@ -58,7 +58,9 @@ if (isset($_GET['user_id'], $_GET['otp'])) {
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-md-6">
+    <h2>Not Instagram</h2>
         <h2 class="mt-5">Reset Password</h2>
 
         <?php
@@ -75,14 +77,15 @@ if (isset($_GET['user_id'], $_GET['otp'])) {
         <form action="reset_password.php?user_id=<?php echo ($_GET['user_id']); ?>&otp=<?php echo ($_GET['otp']); ?>" method="POST">
             <div class="form-group">
                 <label for="otp">Enter OTP</label>
-                <input style="width: 550px; margin-bottom: 15px;" type="text" class="form-control" id="otp" name="otp" required>
+                <input type="text" class="form-control mb-3" id="otp" name="otp" required>
             </div>
             <div class="form-group">
                 <label for="password">Enter New Password</label>
-                <input style="width: 550px; margin-bottom: 15px;" type="password" class="form-control" id="password" name="password" required>
+                <input type="password" class="form-control mb-3" id="password" name="password" required>
             </div>
             <button type="submit" class="btn btn-primary">Reset Password</button>
         </form>
     </div>
+</div>
 </body>
 </html>

@@ -62,7 +62,7 @@ class ForgotPassword {
             $mail->setFrom('noreply@yourdomain.com', 'Password Reset Request');
             $mail->addAddress($this->email);
             $mail->isHTML(true);
-            $mail->Subject = 'Your OTP Code';
+            $mail->Subject = 'Password Reset Request';
             $mail->Body = "
             A password reset request was made for your account.<br>
             Your OTP Code is: <strong>$otp</strong>. Please use this code to reset your password. <br>
@@ -91,25 +91,28 @@ $forgotPassword->handleRequest();
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div  style="margin-top: 75px; margin-left: 50px;" class="container">
-        <h2>Forgot Password</h2>
-        <?php
-        if (isset($_SESSION['error'])) {
-            echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';
-            unset($_SESSION['error']);
-        }
-        if (isset($_SESSION['success'])) {
-            echo '<div class="alert alert-success">' . $_SESSION['success'] . '</div>';
-            unset($_SESSION['success']);
-        }
-        ?>
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="email">Enter your email address:</label>
-                <input style="width: 550px; margin-bottom: 15px;" type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6">
+            <h2>Not Instagram</h2>
+            <h2 class="mt-5">Forgot Password</h2>
+            <?php
+            if (isset($_SESSION['error'])) {
+                echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';
+                unset($_SESSION['error']);
+            }
+            if (isset($_SESSION['success'])) {
+                echo '<div class="alert alert-success">' . $_SESSION['success'] . '</div>';
+                unset($_SESSION['success']);
+            }
+            ?>
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="email">Enter your email address:</label>
+                    <input type="email" class="form-control mb-3" id="email" name="email" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
