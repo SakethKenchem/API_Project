@@ -110,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="mt-3 text-center">Don't have an account? <a href="../../views/user/signup.php">Sign up</a></p>
+
+                <p class="mt-3 text-center">Forgot your password? <a href="../../views/user/forgot_password.php">Reset password</a></p>
             </form>
             <?php if ($message = $login->getMessage()): ?>
                 <div class="alert alert-danger mt-3">
