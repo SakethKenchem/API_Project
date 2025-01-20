@@ -1,9 +1,9 @@
 <?php
-require_once '../../includes/db.php';
+
+require_once '../../includes/db.php'; // Use require_once to prevent re-declaration
 
 class Navbar {
     private $db;
-    private $id;
     private $username;
     private $profileLink;
 
@@ -43,9 +43,9 @@ class Navbar {
     }
 }
 
-
 $user = new Navbar($conn);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,6 +71,9 @@ $user = new Navbar($conn);
                             <a class="nav-link" href="<?= ($user->getProfileLink()) ?>">
                                 <?= ($user->getUsername()) ?>
                             </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="create_post.php">Create Post</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-danger" href="logout.php">Logout</a>
