@@ -2,23 +2,26 @@
 session_name("user_session");
 session_start();
 
-require_once '../../includes/db.php';
-include '../../includes/navbar.php';
-require_once '../../config.php';
+require '../../config.php';
+require '../../includes/db.php';
+require '../../includes/navbar.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../../views/user/login.php");
     exit();
 }
 
-class Post {
+class Post
+{
     private $conn;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function createPost($user_id, $content, $image_url = null) {
+    public function createPost($user_id, $content, $image_url = null)
+    {
         try {
             $query = "INSERT INTO posts (user_id, content, image_url) VALUES (:user_id, :content, :image_url)";
             $stmt = $this->conn->prepare($query);
@@ -27,6 +30,7 @@ class Post {
             $stmt->bindParam(":image_url", $image_url);
             return $stmt->execute();
         } catch (PDOException $e) {
+            error_log("Error creating post: " . $e->getMessage());
             return false;
         }
     }
@@ -41,15 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image_url = null;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-        $target_dir = "../../uploads/";
-        $image_name = time() . "_" . basename($_FILES["image"]["name"]);
-        $target_file = $target_dir . $image_name;
+        $upload_dir = '../../uploads/';
+        $target_file = $upload_dir . basename($_FILES['image']['name']);
         $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-        $allowedTypes = ["jpg", "jpeg", "png", "gif"];
+        $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
 
-        if (in_array($imageFileType, $allowedTypes)) {
-            if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                $image_url = $image_name;
+        if (in_array($imageFileType, $allowed_types)) {
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+                $image_url = basename($_FILES['image']['name']);
             } else {
                 $message = "<div class='alert alert-danger'>Error uploading the image.</div>";
             }
@@ -77,32 +80,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
     <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h2>Create a Post</h2>
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($message)) echo $message; ?>
-                        <form action="create_post.php" method="POST" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <textarea class="form-control" name="content" rows="3" placeholder="What's on your mind?" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="image" class="form-label">Upload Image (Optional)</label>
-                                <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">Post</button>
-                        </form>
-                    </div>
-                </div>
+        <h1 class="text-center">Create a Post</h1>
+        <?php if (!empty($message)) echo $message; ?>
+
+        <form action="create_post.php" method="POST" enctype="multipart/form-data" class="mt-4">
+            <div class="form-group">
+                <textarea class="form-control" name="content" rows="3" placeholder="What's on your mind?" required></textarea>
             </div>
-        </div>
+            <div class="form-group mt-3">
+                <label for="image" class="form-label">Upload Image</label>
+                <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Post</button>
+        </form>
     </div>
 
-    <script src="../../assets/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

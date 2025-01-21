@@ -32,8 +32,8 @@ class PasswordReset {
             $stmt->bindParam(':password', $new_password_hashed);
             $stmt->bindParam(':user_id', $this->user_id);
             $stmt->execute();
-            $_SESSION['success'] = "Password has been reset successfully.";
-            header("Location: login.php");
+            $_SESSION['success'] = "Password has been reset successfully. Redirecting to login page...";
+            header("Refresh: 2; url=login.php");
             exit;
         } else {
             $_SESSION['error'] = "Invalid OTP.";
