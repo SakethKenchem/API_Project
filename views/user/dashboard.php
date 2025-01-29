@@ -3,8 +3,8 @@ session_name("user_session");
 session_start();
 
 require '../../config.php';
-include '../../includes/navbar.php';
-require '../../includes/db.php';
+include '../../includes/navbar.php'; 
+require '../../includes/db.php'; 
 
 class Dashboard
 {
@@ -53,50 +53,44 @@ class Dashboard
     }
 }
 
-$dashboard = new Dashboard($conn);
+$dashboard = new Dashboard($conn); 
 $user = $dashboard->getUser();
-$posts = $dashboard->getPosts(); 
+$posts = $dashboard->getPosts(); // Fetch posts
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        
+        /* Ensures all images have the same height */
         .post-image {
-            width: 100%;
-            
-            height: 200px;
-           
-            object-fit: cover;
+            width: 100%; /* Makes the image fit the card width */
+            height: 200px; /* Sets a consistent height */
+            object-fit: cover; /* Ensures the image covers the area without distorting */
         }
 
         .card-deck {
             display: flex;
             justify-content: center;
         }
-
-        .card {
-            margin: 15px;
         
+        .card {
+            margin: 15px; /* Optional: Adds space between cards */
         }
     </style>
 </head>
-
 <body>
-    <div class="text-center">
-        <h1 class="greeting">Welcome, <?php echo ($user['username']); ?>!</h1>
-    </div>
     <div class="container mt-5">
+        <div class="text-center">
+            <p class="fs-4">Welcome, <?php echo ($user['username']); ?>!</p>
+        </div>
 
-
-        <!-- cards -->
+        <!-- Centered cards -->
         <div class="row justify-content-center mt-4">
             <?php foreach ($posts as $post): ?>
                 <div class="col-md-4 mb-4">
@@ -108,7 +102,7 @@ $posts = $dashboard->getPosts();
                         <div class="card-header">
                             <?php echo ($user['username']); ?>
                         </div>
-
+                        
                         <div class="card-body">
                             <p class="card-text"><?php echo ($post['content']); ?></p>
                         </div>
@@ -123,5 +117,4 @@ $posts = $dashboard->getPosts();
 
     <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

@@ -60,20 +60,31 @@ class Login
     }
 }
 
-// Initialize login
-$login = new Login($conn);
+$message = '';
+
+// Ensure CAPTCHA session is set
+if (!isset($_SESSION['captcha'])) {
+    $_SESSION['captcha'] = ''; 
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $login->authenticate($email, $username, $password);
+    // CAPTCHA validation first
+    if (!isset($_POST['captcha_input']) || $_POST['captcha_input'] !== $_SESSION['captcha']) {
+        $message = '<span style="color:red">CAPTCHA ENTERED IS INCORRECT. REFRESH PAGE AND TRY AGAIN.</span>';
+    } else {
+        // If CAPTCHA is correct, proceed with login
+        $login = new Login($conn);
+        $email = $_POST['email'];
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $login->authenticate($email, $username, $password);
+        $message = $login->getMessage();
+    }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/loginform.css">
 </head>
-
 <body>
     <h3>Not Instagram</h3>
     <div class="container">
@@ -108,12 +118,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label class="form-check-label" for="showPassword">Show Password</label>
                 </div>
 
+                <!-- CAPTCHA -->
+                <div class="form-group">
+                    <label for="captcha">Captcha</label>
+                    <div class="d-flex">
+                        <img src="../../includes/captcha.php" alt="CAPTCHA Image" class="mr-2">
+                        <input type="text" class="form-control" id="captcha_input" name="captcha_input" required>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="mt-3 text-center">Don't have an account? <a href="../../views/user/signup.php">Sign up</a></p>
 
                 <p class="mt-3 text-center">Forgot your password? <a href="../../views/user/forgot_password.php">Reset password</a></p>
             </form>
-            <?php if ($message = $login->getMessage()): ?>
+            <?php if (!empty($message)): ?>
                 <div class="alert alert-danger mt-3">
                     <?= $message ?>
                 </div>
