@@ -73,7 +73,7 @@ $user = new Navbar($conn);
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="create_post.php">Create Post</a>
+                            <a class="nav-link" href="create_post.php">➕</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-danger" href="logout.php">Logout</a>

@@ -62,14 +62,12 @@ class Login
 
 $message = '';
 
-// Ensure CAPTCHA session is set
-if (!isset($_SESSION['captcha'])) {
-    $_SESSION['captcha'] = ''; 
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CAPTCHA validation first
-    if (!isset($_POST['captcha_input']) || $_POST['captcha_input'] !== $_SESSION['captcha']) {
+    // Validate CAPTCHA: trim input and compare
+    $captchaInput = trim($_POST['captcha_input'] ?? '');
+    $captchaSession = trim($_SESSION['captcha'] ?? '');
+
+    if ($captchaInput === '' || $captchaInput !== $captchaSession) {
         $message = '<span style="color:red">CAPTCHA ENTERED IS INCORRECT. REFRESH PAGE AND TRY AGAIN.</span>';
     } else {
         // If CAPTCHA is correct, proceed with login
@@ -129,7 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="mt-3 text-center">Don't have an account? <a href="../../views/user/signup.php">Sign up</a></p>
-
                 <p class="mt-3 text-center">Forgot your password? <a href="../../views/user/forgot_password.php">Reset password</a></p>
             </form>
             <?php if (!empty($message)): ?>
@@ -151,5 +148,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     });
 </script>
-
 </html>

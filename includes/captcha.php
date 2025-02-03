@@ -1,4 +1,5 @@
 <?php
+session_name("user_session"); // Use the same session name as in login.php
 session_start();
 
 // Generate a random 4-digit captcha
