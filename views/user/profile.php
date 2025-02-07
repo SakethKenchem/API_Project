@@ -47,16 +47,16 @@ class UserProfile
 }
 
 $message = '';
-$user = new UserProfile($conn, $_SESSION['user_id']);
+$userProfile = new UserProfile($conn, $_SESSION['user_id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
-    if ($user->updateUsername($_POST['new_username'])) {
+    if ($userProfile->updateUsername($_POST['new_username'])) {
         $message = "Username updated successfully!";
-        $user = new UserProfile($conn, $_SESSION['user_id']); // Reload user data
+        $userProfile = new UserProfile($conn, $_SESSION['user_id']);
     }
 }
 
-$userData = $user->getData();
+$userData = $userProfile->getData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,34 +71,32 @@ $userData = $user->getData();
 <body>
     <div class="container mt-5">
         <?php if ($message): ?>
-            <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
+            <div class="alert alert-info"><?= ($message) ?></div>
         <?php endif; ?>
 
-        <div class="row justify-content-center">
+        <!-- Profile Information Section -->
+        <div class="row justify-content-center mb-5">
             <div class="col-md-8">
-                <div class="card">
+                <div class="card mb-4">
                     <div class="card-header">
                         <h3 class="mb-0">Profile Information</h3>
                     </div>
                     <div class="card-body">
                         <div class="mb-4">
                             <h5>Account Details</h5>
-                            <p><strong>Email:</strong> <?= htmlspecialchars($userData['email']) ?></p>
-                            <p><strong>Member Since:</strong> <?= htmlspecialchars(date('F j, Y', strtotime($userData['created_at']))) ?></p>
+                            <p><strong>Email:</strong> <?= ($userData['email']) ?></p>
+                            <p><strong>Member Since:</strong> <?= (date('F j, Y', strtotime($userData['created_at']))) ?></p>
                         </div>
-
                         <div class="mb-4">
                             <h5>Update Username</h5>
                             <form method="POST" class="mt-3">
                                 <div class="mb-3">
                                     <label for="current_username" class="form-label">Current Username</label>
-                                    <input type="text" class="form-control" id="current_username"
-                                        value="<?= htmlspecialchars($userData['username']) ?>" disabled>
+                                    <input type="text" class="form-control" id="current_username" value="<?= ($userData['username']) ?>" disabled>
                                 </div>
                                 <div class="mb-3">
                                     <label for="new_username" class="form-label">New Username</label>
-                                    <input type="text" class="form-control" id="new_username" name="new_username"
-                                        required minlength="3" maxlength="30">
+                                    <input type="text" class="form-control" id="new_username" name="new_username" required minlength="3" maxlength="30">
                                     <div class="form-text">Username must be 3-30 characters long.</div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Update Username</button>
@@ -106,6 +104,13 @@ $userData = $user->getData();
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Liked Posts Section-->
+        <div class="row justify-content-center" style="margin-bottom: 35px;">
+            <div class="col-md-10">
+                <?php include 'view_likes.php'; ?>
             </div>
         </div>
     </div>

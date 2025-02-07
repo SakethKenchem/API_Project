@@ -31,6 +31,7 @@ class Login
 
             if ($this->sendOtp($user['email'], $otp)) {
                 $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = 'user';
                 header("Location: ../../includes/verify_login_otp.php");
                 exit();
