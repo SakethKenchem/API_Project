@@ -24,33 +24,6 @@ class Dashboard
         return $this->user_id;
     }
 
-    public function toggleLike($post_id)
-    {
-        if (!$this->user_id) {
-            return json_encode(['status' => 'error', 'message' => 'Not logged in']);
-        }
-
-        $stmt = $this->conn->prepare("SELECT id FROM likes WHERE post_id = ? AND user_id = ?");
-        $stmt->execute([$post_id, $this->user_id]);
-        $existing_like = $stmt->fetch();
-
-        if ($existing_like) {
-            $stmt = $this->conn->prepare("DELETE FROM likes WHERE post_id = ? AND user_id = ?");
-            $stmt->execute([$post_id, $this->user_id]);
-            $liked = false;
-        } else {
-            $stmt = $this->conn->prepare("INSERT INTO likes (post_id, user_id) VALUES (?, ?)");
-            $stmt->execute([$post_id, $this->user_id]);
-            $liked = true;
-        }
-
-        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM likes WHERE post_id = ?");
-        $stmt->execute([$post_id]);
-        $count = $stmt->fetchColumn();
-
-        return json_encode(['status' => 'success', 'liked' => $liked, 'count' => $count]);
-    }
-
     public function getUserInfo()
     {
         $stmt = $this->conn->prepare("SELECT username FROM users WHERE id = ?");
@@ -71,77 +44,9 @@ class Dashboard
         $stmt->execute([$this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    public function addComment($post_id, $content)
-    {
-        if (!$this->user_id || empty(trim($content))) {
-            return json_encode(['status' => 'error', 'message' => 'Invalid comment']);
-        }
-
-        $stmt = $this->conn->prepare("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)");
-        $stmt->execute([$post_id, $this->user_id, $content]);
-
-        $comment_id = $this->conn->lastInsertId();
-        $stmt = $this->conn->prepare("SELECT username FROM users WHERE id = ?");
-        $stmt->execute([$this->user_id]);
-        $username = $stmt->fetchColumn();
-
-        return json_encode([
-            'status' => 'success',
-            'comment_id' => $comment_id,
-            'username' => $username,
-            'content' => htmlspecialchars($content)
-        ]);
-    }
-
-    public function getComments($post_id)
-    {
-        $stmt = $this->conn->prepare("SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at ASC");
-        $stmt->execute([$post_id]);
-        return json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-    }
-
-    public function editComment($comment_id, $content)
-    {
-        if (!$this->user_id || empty(trim($content))) {
-            return json_encode(['status' => 'error', 'message' => 'Invalid comment']);
-        }
-
-        $stmt = $this->conn->prepare("UPDATE comments SET content = ? WHERE id = ? AND user_id = ?");
-        $stmt->execute([$content, $comment_id, $this->user_id]);
-
-        return json_encode(['status' => 'success', 'content' => htmlspecialchars($content)]);
-    }
-
-    public function deleteComment($comment_id)
-    {
-        if (!$this->user_id) {
-            return json_encode(['status' => 'error', 'message' => 'Not logged in']);
-        }
-
-        $stmt = $this->conn->prepare("DELETE FROM comments WHERE id = ? AND user_id = ?");
-        $stmt->execute([$comment_id, $this->user_id]);
-
-        return json_encode(['status' => 'success']);
-    }
 }
 
 $dashboard = new Dashboard($conn);
-
-if (isset($_POST['action'])) {
-    if ($_POST['action'] == 'toggle_like') {
-        echo $dashboard->toggleLike($_POST['post_id']);
-    } elseif ($_POST['action'] == 'add_comment') {
-        echo $dashboard->addComment($_POST['post_id'], $_POST['content']);
-    } elseif ($_POST['action'] == 'get_comments') {
-        echo $dashboard->getComments($_POST['post_id']);
-    } elseif ($_POST['action'] == 'edit_comment') {
-        echo $dashboard->editComment($_POST['comment_id'], $_POST['content']);
-    } elseif ($_POST['action'] == 'delete_comment') {
-        echo $dashboard->deleteComment($_POST['comment_id']);
-    }
-    exit;
-}
 
 if (!$dashboard->getUserId()) {
     header('Location: login.php');
@@ -232,7 +137,7 @@ $posts = $dashboard->getPosts();
         $(document).ready(function() {
             $('.like-btn').click(function() {
                 const btn = $(this);
-                $.post("", {
+                $.post("likes.php", { // Changed URL to likes.php
                     action: 'toggle_like',
                     post_id: btn.data('post-id')
                 }, function(response) {
@@ -247,13 +152,12 @@ $posts = $dashboard->getPosts();
                 section.toggle();
                 const postId = $(this).data('post-id');
 
-                $.post("", {
+                $.post("comments.php", { // Changed URL to comments.php
                     action: 'get_comments',
                     post_id: postId
                 }, function(response) {
                     const comments = JSON.parse(response); // Parse JSON
                     let commentsHtml = "";
-
                     comments.forEach(comment => {
                         commentsHtml += `
                             <div class="comment" data-comment-id="${comment.id}">
@@ -273,7 +177,7 @@ $posts = $dashboard->getPosts();
             $('.add-comment').click(function() {
                 const input = $(this).siblings('.comment-input');
                 const postId = $(this).data('post-id');
-                $.post("", {
+                $.post("comments.php", { // Changed URL to comments.php
                     action: 'add_comment',
                     post_id: postId,
                     content: input.val()
@@ -308,7 +212,7 @@ $posts = $dashboard->getPosts();
                 const input = commentDiv.find('.comment-edit-input');
                 const newContent = input.val();
 
-                $.post("", {
+                $.post("comments.php", { // Changed URL to comments.php
                     action: 'edit_comment',
                     comment_id: commentId,
                     content: newContent
@@ -326,7 +230,7 @@ $posts = $dashboard->getPosts();
                 const commentId = commentDiv.data('comment-id');
 
                 if (confirm('Are you sure you want to delete this comment?')) {
-                    $.post("", {
+                    $.post("comments.php", { // Changed URL to comments.php
                         action: 'delete_comment',
                         comment_id: commentId
                     }, function(response) {
