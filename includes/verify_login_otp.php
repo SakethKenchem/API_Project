@@ -44,7 +44,7 @@ class LoginOTPVerification {
                 $current_time = time();
 
                 if (($current_time - $created_at) <= $otp_expiration_time) {
-                    // Compare the entered OTP with the stored OTP
+                    
                     if ($stored_otp === $otp_entered) {
                         $_SESSION['is_logged_in'] = true;
                         header("Location: /API_Project/views/user/dashboard.php");

@@ -26,7 +26,7 @@ class UserProfile
 
     private function loadUser()
     {
-        $stmt = $this->db->prepare("SELECT username, email, created_at FROM users WHERE id = :user_id");
+        $stmt = $this->db->prepare("SELECT username, email, created_at, profile_pic FROM users WHERE id = :user_id");
         $stmt->execute(['user_id' => $this->id]);
         $this->data = $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -76,10 +76,65 @@ class UserProfile
             'user_id' => $this->id
         ]);
     }
+
+    public function updateProfilePic($imagePath)
+    {
+        $stmt = $this->db->prepare("UPDATE users SET profile_pic = :profile_pic WHERE id = :user_id");
+        return $stmt->execute([
+            'profile_pic' => $imagePath,
+            'user_id' => $this->id
+        ]);
+    }
+
 }
 
 $message = '';
 $userProfile = new UserProfile($conn, $_SESSION['user_id']);
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
+    $targetDir = "../../uploads/";  
+    $targetFile = $targetDir . basename($_FILES["profile_pic"]["name"]);
+    $uploadOk = 1;
+    $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+
+
+    $check = getimagesize($_FILES["profile_pic"]["tmp_name"]);
+    if ($check === false) {
+        $message = "File is not an image.";
+        $uploadOk = 0;
+    }
+
+    if ($_FILES["profile_pic"]["size"] > 500000) {
+        $message = "Sorry, your file is too large.";
+        $uploadOk = 0;
+    }
+
+    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+        && $imageFileType != "gif") {
+        $message = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+        $uploadOk = 0;
+    }
+
+    if ($uploadOk == 0) {
+        $message = "Sorry, your file was not uploaded.";
+        
+    } else {
+        if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $targetFile)) {
+            
+            if ($userProfile->updateProfilePic($targetFile)) {
+                $message = "Profile picture updated successfully!";
+                
+                $userProfile = new UserProfile($conn, $_SESSION['user_id']);
+            } else {
+                $message = "Failed to update profile picture path in the database.";
+            }
+        } else {
+            $message = "Sorry, there was an error uploading your file.";
+        }
+    }
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['new_username'])) {
@@ -139,7 +194,7 @@ $comments = $userProfile->getComments(); // Retrieve the comments
 <body>
 <div class="container mt-5">
     <?php if ($message): ?>
-        <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
+        <div class="alert alert-info"><?= ($message) ?></div>
     <?php endif; ?>
 
     <!-- Profile Information Section -->
@@ -152,8 +207,8 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                 <div class="card-body">
                     <div class="mb-4">
                         <h5>Account Details</h5>
-                        <p><strong>Email:</strong> <?= htmlspecialchars($userData['email']) ?></p>
-                        <p><strong>Member Since:</strong> <?= htmlspecialchars(date('F j, Y', strtotime($userData['created_at']))) ?></p>
+                        <p><strong>Email:</strong> <?= ($userData['email']) ?></p>
+                        <p><strong>Member Since:</strong> <?= (date('F j, Y', strtotime($userData['created_at']))) ?></p>
                     </div>
                     <div class="mb-4">
                         <h5>Update Username</h5>
@@ -161,7 +216,7 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                             <div class="mb-3">
                                 <label for="current_username" class="form-label">Current Username</label>
                                 <input type="text" class="form-control" id="current_username"
-                                       value="<?= htmlspecialchars($userData['username']) ?>" disabled>
+                                       value="<?= ($userData['username']) ?>" disabled>
                             </div>
                             <div class="mb-3">
                                 <label for="new_username" class="form-label">New Username</label>
@@ -171,6 +226,21 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                             </div>
                             <button type="submit" class="btn btn-primary">Update Username</button>
                         </form>
+                    </div>
+
+                    <!-- Profile Picture Update Form -->
+                    <div class="mb-4">
+                        <h5>Update Profile Picture</h5>
+                        <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="profile_pic" class="form-label">Upload Profile Picture</label>
+                                <input type="file" class="form-control" id="profile_pic" name="profile_pic"
+                                       accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </form>
+                        <img src="<?= ($userData['profile_pic'] ?: 'default.png') ?>" class="rounded-circle"
+                             width="150" height="150" alt="Profile Picture">
                     </div>
                 </div>
             </div>
@@ -192,20 +262,20 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                             <?php foreach ($comments as $comment): ?>
                                 <li class="list-group-item">
                                     <p>
-                                        <strong>On post:</strong> <?= htmlspecialchars($comment['post_content']) ?>
+                                        <strong>On post:</strong> <?= ($comment['post_content']) ?>
                                         <br>
                                         <strong>Comment:</strong>
                                         <span id="comment-content-<?= $comment['id'] ?>">
-                                            <?= htmlspecialchars($comment['content']) ?>
+                                            <?= ($comment['content']) ?>
                                         </span>
                                     </p>
-                                    <small>Posted on: <?= htmlspecialchars(date('F j, Y, g:i a', strtotime($comment['created_at']))) ?></small>
-
+                                    <small>Posted on: <?= (date('F j, Y, g:i a', strtotime($comment['created_at']))) ?></small>
                                     <div class="comment-actions">
                                         <button onclick="editComment(<?= $comment['id'] ?>)">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
-                                        <button onclick="deleteComment(<?= $comment['id'] ?>)" class="btn btn-danger btn-sm">
+                                        <button onclick="deleteComment(<?= $comment['id'] ?>)"
+                                                class="btn btn-danger btn-sm">
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </div>
@@ -213,10 +283,14 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                                         <div class="form-group">
                                             <label for="comment-content">Edit Comment:</label>
                                             <textarea class="form-control" id="comment-edit-input-<?= $comment['id'] ?>"
-                                                      rows="3"><?= htmlspecialchars($comment['content']) ?></textarea>
+                                                      rows="3"><?= ($comment['content']) ?></textarea>
                                         </div>
-                                        <button onclick="saveComment(<?= $comment['id'] ?>)" class="btn btn-primary btn-sm">Save</button>
-                                        <button onclick="cancelEdit(<?= $comment['id'] ?>)" class="btn btn-secondary btn-sm">Cancel</button>
+                                        <button onclick="saveComment(<?= $comment['id'] ?>)"
+                                                class="btn btn-primary btn-sm">Save
+                                        </button>
+                                        <button onclick="cancelEdit(<?= $comment['id'] ?>)"
+                                                class="btn btn-secondary btn-sm">Cancel
+                                        </button>
                                     </div>
                                 </li>
                             <?php endforeach; ?>
@@ -273,7 +347,7 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                 function (response) {
                     const data = JSON.parse(response);
                     if (data.status === 'success') {
-                        // Remove the comment from the list
+                        
                         const commentElement = document.querySelector(`.list-group-item [data-comment-id="${commentId}"]`);
                         if (commentElement) {
                             commentElement.remove();

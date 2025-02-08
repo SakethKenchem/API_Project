@@ -34,7 +34,7 @@ class Dashboard
     public function getPosts()
     {
         $stmt = $this->conn->prepare("
-            SELECT p.*, u.username,
+            SELECT p.*, u.username, u.profile_pic,
                    (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
                    EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked
             FROM posts p
@@ -92,12 +92,23 @@ $posts = $dashboard->getPosts();
         .comment-actions .delete-comment {
             cursor: pointer;
             margin-left: 10px;
-            font-size: 16px; /* Reduced size */
+            font-size: 16px; 
         }
 
         .comment-edit-input {
             width: 100%;
             margin-top: 5px;
+        }
+        .post-profile-pic {
+            width: 30px; 
+            height: 30px; 
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 5px; 
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
         }
     </style>
 </head>
@@ -114,7 +125,10 @@ $posts = $dashboard->getPosts();
                         <?php endif; ?>
                         <div class="card-body">
                             <p style="font-size: xx-small;"><?= date('M d, Y', strtotime($post['created_at'])) ?></p>
-                            <h6><?= ($post['username']) ?></h6>
+                            <div class="post-header">
+                                <img src="<?= ($post['profile_pic'] ?: '../../default.png') ?>" alt="Profile Picture" class="post-profile-pic">
+                                <h6><?= ($post['username']) ?></h6>
+                            </div>
                             <p><?= ($post['content']) ?></p>
                             <button class="like-btn" data-post-id="<?= $post['id'] ?>">
                                 <?= $post['user_liked'] ? '❤️' : '🤍' ?>
@@ -138,7 +152,7 @@ $posts = $dashboard->getPosts();
         $(document).ready(function() {
             $('.like-btn').click(function() {
                 const btn = $(this);
-                $.post("likes.php", { // Changed URL to likes.php
+                $.post("likes.php", { 
                     action: 'toggle_like',
                     post_id: btn.data('post-id')
                 }, function(response) {
@@ -153,11 +167,11 @@ $posts = $dashboard->getPosts();
                 section.toggle();
                 const postId = $(this).data('post-id');
 
-                $.post("comments.php", { // Changed URL to comments.php
+                $.post("comments.php", { 
                     action: 'get_comments',
                     post_id: postId
                 }, function(response) {
-                    const comments = JSON.parse(response); // Parse JSON
+                    const comments = JSON.parse(response); 
                     let commentsHtml = "";
                     comments.forEach(comment => {
                         commentsHtml += `
@@ -171,14 +185,14 @@ $posts = $dashboard->getPosts();
                         `;
                     });
 
-                    section.find('.comments-list').html(commentsHtml); // Display formatted comments
+                    section.find('.comments-list').html(commentsHtml); 
                 });
             });
 
             $('.add-comment').click(function() {
                 const input = $(this).siblings('.comment-input');
                 const postId = $(this).data('post-id');
-                $.post("comments.php", { // Changed URL to comments.php
+                $.post("comments.php", { 
                     action: 'add_comment',
                     post_id: postId,
                     content: input.val()
@@ -213,7 +227,7 @@ $posts = $dashboard->getPosts();
                 const input = commentDiv.find('.comment-edit-input');
                 const newContent = input.val();
 
-                $.post("comments.php", { // Changed URL to comments.php
+                $.post("comments.php", { 
                     action: 'edit_comment',
                     comment_id: commentId,
                     content: newContent
@@ -231,7 +245,7 @@ $posts = $dashboard->getPosts();
                 const commentId = commentDiv.data('comment-id');
 
                 if (confirm('Are you sure you want to delete this comment?')) {
-                    $.post("comments.php", { // Changed URL to comments.php
+                    $.post("comments.php", { 
                         action: 'delete_comment',
                         comment_id: commentId
                     }, function(response) {
