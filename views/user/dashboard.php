@@ -104,17 +104,18 @@ $posts = $dashboard->getPosts();
 
 <body>
     <div class="container mt-4">
-        <h3 class="text-center mb-4">Welcome, <?= htmlspecialchars($user['username']) ?></h3>
+        <h3 class="text-center mb-4">Welcome, <?= ($user['username']) ?></h3>
         <div class="row">
             <?php foreach ($posts as $post): ?>
                 <div class="col-md-3 mb-4">
                     <div class="card">
                         <?php if ($post['image_url']): ?>
-                            <img src="../../uploads/<?= htmlspecialchars($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                            <img src="../../uploads/<?= ($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
                         <?php endif; ?>
                         <div class="card-body">
-                            <h6><?= htmlspecialchars($post['username']) ?></h6>
-                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <p style="font-size: xx-small;"><?= date('M d, Y', strtotime($post['created_at'])) ?></p>
+                            <h6><?= ($post['username']) ?></h6>
+                            <p><?= ($post['content']) ?></p>
                             <button class="like-btn" data-post-id="<?= $post['id'] ?>">
                                 <?= $post['user_liked'] ? '❤️' : '🤍' ?>
                             </button>
