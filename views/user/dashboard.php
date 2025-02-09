@@ -138,7 +138,7 @@ $posts = $dashboard->getPosts();
                             <button class="btn btn-link view-comments" data-post-id="<?= $post['id'] ?>">View Comments</button>
                             <div class="comments-section" data-post-id="<?= $post['id'] ?>">
                                 <div class="comments-list"></div>
-                                <input type="text" class="form-control comment-input" placeholder="Write a comment...">
+                                <input type="text" class="form-control comment-input" placeholder="Write a comment..." required>
                                 <button class="btn btn-primary btn-sm add-comment" data-post-id="<?= $post['id'] ?>">Post</button>
                             </div>
                         </div>

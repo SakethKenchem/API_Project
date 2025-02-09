@@ -23,7 +23,7 @@ class Navbar {
 
                 if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $this->username = $result['username'];
-                    $this->profileLink = "../../views/user/mysettings.php";
+                    $this->profileLink = "../../views/user/profile.php";
                     $this->profilePic = $result['profile_pic'] ?: 'default.png'; // Use default if null
                 }
             } catch (PDOException $e) {

@@ -133,10 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
             $message = "Sorry, there was an error uploading your file.";
         }
     }
-}
-
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+} if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['new_username'])) {
         if ($userProfile->updateUsername($_POST['new_username'])) {
             $message = "Username updated successfully!";
@@ -187,6 +184,11 @@ $comments = $userProfile->getComments(); // Retrieve the comments
         .comment-actions button:hover,
         .comment-actions a:hover {
             background-color: #0056b3;
+        }
+
+        .liked-posts-container {
+            max-height: 300px; /* Adjust this value to your desired height */
+            overflow-y: auto; /* This enables the vertical scrollbar */
         }
     </style>
 </head>
@@ -245,9 +247,7 @@ $comments = $userProfile->getComments(); // Retrieve the comments
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Comments and Liked Posts Section -->
+    </div> <!-- Comments and Liked Posts Section -->
     <div class="row justify-content-center mb-5">
         <div class="col-md-6">
             <div class="card">
