@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-class UserProfile
+class UserProfileSettings
 {
     private $db;
     private $id;
@@ -89,7 +89,7 @@ class UserProfile
 }
 
 $message = '';
-$userProfile = new UserProfile($conn, $_SESSION['user_id']);
+$userProfile = new UserProfileSettings($conn, $_SESSION['user_id']);
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {

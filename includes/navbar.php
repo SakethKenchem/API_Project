@@ -1,5 +1,5 @@
 <?php
-require_once '../../includes/db.php';
+require_once 'db.php';
 
 class Navbar {
     private $db;
@@ -23,7 +23,7 @@ class Navbar {
 
                 if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $this->username = $result['username'];
-                    $this->profileLink = "../../views/user/profile.php";
+                    $this->profileLink = "../../views/user/myprofile.php";
                     $this->profilePic = $result['profile_pic'] ?: 'default.png'; // Use default if null
                 }
             } catch (PDOException $e) {

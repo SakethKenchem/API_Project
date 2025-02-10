@@ -126,8 +126,9 @@ $posts = $dashboard->getPosts();
                         <div class="card-body">
                             <p style="font-size: xx-small;"><?= date('M d, Y', strtotime($post['created_at'])) ?></p>
                             <div class="post-header">
-                                <img src="<?= ($post['profile_pic'] ?: '../../default.png') ?>" alt="Profile Picture" class="post-profile-pic">
-                                <h6><?= ($post['username']) ?></h6>
+                                <img src="<?= htmlspecialchars($post['profile_pic']) ?: '../../default.png' ?>" alt="Profile Picture" class="post-profile-pic">
+                                <h6><a href="../../views/user/view_profile.php?user_id=<?= $post['user_id'] ?>" style="text-decoration: none; color: black;">
+                                    <?= htmlspecialchars($post['username']) ?></a></h6>
                             </div>
                             <p><?= ($post['content']) ?></p>
                             <button class="like-btn" data-post-id="<?= $post['id'] ?>">
@@ -176,7 +177,7 @@ $posts = $dashboard->getPosts();
                     comments.forEach(comment => {
                         commentsHtml += `
                             <div class="comment" data-comment-id="${comment.id}">
-                                <p><strong>${comment.username}:</strong> <span class="comment-content">${comment.content}</span></p>
+                                <p><strong><a href="../../views/user/view_profile.php?user_id=${comment.user_id}" style="text-decoration: none; color: black;">${comment.username}</a>:</strong> <span class="comment-content">${comment.content}</span></p>
                                 <div class="comment-actions">
                                     <span class="edit-comment">✏️</span>
                                     <span class="delete-comment">🗑️</span>

@@ -115,7 +115,7 @@ $profile_pic = $userProfile->getProfilePic($user['profile_pic']);
         <h4>Profile</h4>
         <img src="<?php echo ($user['profile_pic'] ?: 'default.png'); ?>" alt="Profile Picture" class="profile-pic">
         <h4><?php echo ($user['username']); ?></h4>
-        <p class="bio"><?php echo nl2br(($user['bio'])); ?></p>
+        <p class="bio"><?php echo (($user['bio'])); ?></p>
         <a href="mysettings.php" style="font-size: small;">Settings</a>
 
         <hr style="margin-bottom: -19px;">
