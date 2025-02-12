@@ -83,7 +83,7 @@ try {
             padding: 10px;
         }
         .post-item img {
-            width: 100%;
+            width: fit-content;
             height: 200px;
             object-fit: cover;
             border-radius: 5px;
@@ -109,9 +109,9 @@ try {
             <?php else: ?>
                 <?php foreach ($posts as $post): ?>
                     <div class="post-item">
-                        <a href="view_post.php?id=<?php echo ($post['id']); ?>">
-                            <img src="../../uploads/<?php echo ($post['image_url']); ?>" alt="Post Image"> <!-- Corrected path -->
-                        </a>
+                    <a href="../../views/user/view_post.php?post_id=<?= $post['id'] ?>">
+                                <img src="../../uploads/<?= ($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                            </a>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>

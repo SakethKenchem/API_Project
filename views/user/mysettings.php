@@ -26,7 +26,7 @@ class UserProfileSettings
 
     private function loadUser()
     {
-        $stmt = $this->db->prepare("SELECT username, email, created_at, profile_pic FROM users WHERE id = :user_id");
+        $stmt = $this->db->prepare("SELECT username, email, created_at, profile_pic, bio FROM users WHERE id = :user_id");
         $stmt->execute(['user_id' => $this->id]);
         $this->data = $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -36,6 +36,15 @@ class UserProfileSettings
         $stmt = $this->db->prepare("UPDATE users SET username = :username WHERE id = :user_id");
         return $stmt->execute([
             'username' => $newUsername,
+            'user_id' => $this->id
+        ]);
+    }
+
+    public function updateBio($newBio)
+    {
+        $stmt = $this->db->prepare("UPDATE users SET bio = :bio WHERE id = :user_id");
+        return $stmt->execute([
+            'bio' => $newBio,
             'user_id' => $this->id
         ]);
     }
@@ -139,6 +148,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userProfile = new UserProfile($conn, $_SESSION['user_id']);
         }
     }
+    if (isset($_POST['new_bio'])) {
+        if ($userProfile->updateBio($_POST['new_bio'])) {
+            $message = "Bio updated successfully!";
+            $userProfile = new UserProfileSettings($conn, $_SESSION['user_id']);
+        }
+    }
 }
 
 $userData = $userProfile->getData();
@@ -199,7 +214,7 @@ $comments = $userProfile->getComments();
         <?php endif; ?>
 
         <div class="row justify-content-center mb-5">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="card mb-4">
                     <div class="card-header">
                         <h3 class="mb-0">Profile Information</h3>
@@ -227,24 +242,48 @@ $comments = $userProfile->getComments();
                                 <button type="submit" class="btn btn-primary">Update Username</button>
                             </form>
                         </div>
-
-                        <div class="mb-4">
-                            <h5>Update Profile Picture</h5>
-                            <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label for="profile_pic" class="form-label">Upload Profile Picture</label>
-                                    <input type="file" class="form-control" id="profile_pic" name="profile_pic"
-                                        accept="image/*">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Upload</button>
-                            </form>
-                            <img src="<?= ($userData['profile_pic'] ?: 'default.png') ?>" class="rounded-circle"
-                                width="150" height="150" alt="Profile Picture">
-                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0">Update Profile Picture</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="profile_pic" class="form-label">Upload Profile Picture</label>
+                                <input type="file" class="form-control" id="profile_pic" name="profile_pic"
+                                    accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </form>
+                        <img src="<?= ($userData['profile_pic'] ?: 'default.png') ?>" class="rounded-circle mt-3"
+                            width="150" height="150" alt="Profile Picture">
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0">Update Bio</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" class="mt-3">
+                            <div class="mb-3">
+                                <label for="current_bio" class="form-label">Current Bio</label>
+                                <textarea class="form-control" id="current_bio" rows="2" disabled><?= ($userData['bio']) ?></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_bio" class="form-label">New Bio</label>
+                                <textarea class="form-control" id="new_bio" name="new_bio" rows="2" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Bio</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
+        <hr style="margin-top: -29px;">
         <div class="row justify-content-center mb-5">
             <div class="col-md-6">
                 <div class="card">
@@ -301,7 +340,7 @@ $comments = $userProfile->getComments();
             </div>
 
             <div>
-            <?php include 'view_my_posts.php'; ?>
+                <?php include 'view_my_posts.php'; ?>
 
             </div>
         </div>

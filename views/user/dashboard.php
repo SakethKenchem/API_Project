@@ -75,7 +75,8 @@ $posts = $dashboard->getPosts();
         }
 
         .post-image {
-            height: 200px;
+            width: 100%;
+            height: auto;
             object-fit: cover;
         }
 
@@ -119,12 +120,14 @@ $posts = $dashboard->getPosts();
         <div class="row">
             <?php foreach ($posts as $post): ?>
                 <div class="col-md-3 mb-4">
-                    <div class="card">
+                    <div class="card" style="width: fit-content;">
                         <?php if ($post['image_url']): ?>
-                            <img src="../../uploads/<?= ($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                            <a href="../../views/user/view_post.php?post_id=<?= $post['id'] ?>">
+                                <img src="../../uploads/<?= ($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                            </a>
                         <?php endif; ?>
                         <div class="card-body">
-                            <p style="font-size: xx-small;"><?= date('M d, Y', strtotime($post['created_at'])) ?></p>
+                            <p style="font-size: xx-small;"><?= date('M d, Y h:i A', strtotime($post['created_at'])) ?></p>
                             <div class="post-header">
                                 <img src="<?= htmlspecialchars($post['profile_pic']) ?: '../../default.png' ?>" alt="Profile Picture" class="post-profile-pic">
                                 <h6><a href="../../views/user/view_profile.php?user_id=<?= $post['user_id'] ?>" style="text-decoration: none; color: black;">
