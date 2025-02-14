@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
 
 
         $(document).on('click', '.delete-btn', function() {
-            if (confirm('Are you sure you want to delete this admin?')) {
+            if (confirm('Are you sure you want to delete this user?')) {
                 const id = $(this).data('id');
                 $.ajax({
                     url: 'admin_dashboard.php',

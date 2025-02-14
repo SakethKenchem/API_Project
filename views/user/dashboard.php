@@ -39,9 +39,11 @@ class Dashboard
                    EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked
             FROM posts p
             JOIN users u ON p.user_id = u.id
+            LEFT JOIN followers f ON f.following_id = p.user_id AND f.follower_id = ?
+            WHERE p.user_id = ? OR f.follower_id = ?
             ORDER BY p.created_at DESC
         ");
-        $stmt->execute([$this->user_id]);
+        $stmt->execute([$this->user_id, $this->user_id, $this->user_id, $this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
@@ -147,27 +149,27 @@ $posts = $dashboard->getPosts();
 
 <body>
     <div class="container mt-4">
-        <h3 class="text-center mb-4">Welcome, <?= htmlspecialchars($user['username']) ?></h3>
+        <h3 class="text-center mb-4">Welcome, <?= ($user['username']) ?></h3>
         <div class="row">
             <?php foreach ($posts as $post): ?>
                 <div class="col-md-3 mb-4">
                     <div class="card" style="width: fit-content;">
                         <?php if ($post['image_url']): ?>
                             <a href="../../views/user/view_post.php?post_id=<?= $post['id'] ?>">
-                                <img src="../../uploads/<?= htmlspecialchars($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                                <img src="../../uploads/<?= ($post['image_url']) ?>" class="post-image card-img-top" alt="Post image">
                             </a>
                         <?php endif; ?>
                         <div class="card-body">
                             <p style="font-size: xx-small;"><?= date('M d, Y h:i A', strtotime($post['created_at'])) ?></p>
                             <div class="post-header">
-                                <img src="<?= htmlspecialchars($post['profile_pic']) ?: '../../default.png' ?>" alt="Profile Picture" class="post-profile-pic">
+                                <img src="<?= ($post['profile_pic']) ?: '../../default.png' ?>" alt="Profile Picture" class="post-profile-pic">
                                 <h6>
                                     <a href="../../views/user/view_profile.php?user_id=<?= $post['user_id'] ?>" style="text-decoration: none; color: black;">
-                                        <?= htmlspecialchars($post['username']) ?>
+                                        <?= ($post['username']) ?>
                                     </a>
                                 </h6>
                             </div>
-                            <p><?= htmlspecialchars($post['content']) ?></p>
+                            <p><?= ($post['content']) ?></p>
                             <button class="like-btn" data-post-id="<?= $post['id'] ?>">
                                 <?= $post['user_liked'] ? '❤️' : '🤍' ?>
                             </button>

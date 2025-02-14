@@ -48,4 +48,5 @@ if (isset($_POST['action']) && $_POST['action'] == 'toggle_like') {
     echo $dashboard->toggleLike($_POST['post_id']);
     exit;
 }
+
 ?>

@@ -4,16 +4,19 @@ session_start();
 
 require '../../includes/db.php';
 
-class ViewPost {
+class ViewPost
+{
     private $conn;
     private $post_id;
 
-    public function __construct($conn, $post_id) {
+    public function __construct($conn, $post_id)
+    {
         $this->conn = $conn;
         $this->post_id = $post_id;
     }
 
-    public function getPostDetails() {
+    public function getPostDetails()
+    {
         $query = "SELECT p.id, p.user_id, p.image_url, p.content, p.created_at, u.username 
                   FROM posts p 
                   JOIN users u ON p.user_id = u.id 
@@ -24,7 +27,8 @@ class ViewPost {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getLikesCount() {
+    public function getLikesCount()
+    {
         $query = "SELECT COUNT(*) AS likes FROM likes WHERE post_id = :post_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':post_id', $this->post_id, PDO::PARAM_INT);
@@ -32,7 +36,8 @@ class ViewPost {
         return $stmt->fetch(PDO::FETCH_ASSOC)['likes'];
     }
 
-    public function getImage() {
+    public function getImage()
+    {
         $query = "SELECT image_url FROM posts WHERE id = :post_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':post_id', $this->post_id, PDO::PARAM_INT);
@@ -40,7 +45,8 @@ class ViewPost {
         return $stmt->fetch(PDO::FETCH_ASSOC)['image_url'];
     }
 
-    public function getComments() {
+    public function getComments()
+    {
         $query = "SELECT c.content, c.created_at, u.username 
                   FROM comments c 
                   JOIN users u ON c.user_id = u.id 
@@ -52,7 +58,8 @@ class ViewPost {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addComment($user_id, $content) {
+    public function addComment($user_id, $content)
+    {
         $query = "INSERT INTO comments (post_id, user_id, content, created_at) 
                   VALUES (:post_id, :user_id, :content, NOW())";
         $stmt = $this->conn->prepare($query);
@@ -60,6 +67,16 @@ class ViewPost {
         $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
         $stmt->bindParam(':content', $content, PDO::PARAM_STR);
         return $stmt->execute();
+    }
+
+    public function getUserLikeStatus()
+    {
+        $query = "SELECT COUNT(*) AS liked FROM likes WHERE post_id = :post_id AND user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':post_id', $this->post_id, PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC)['liked'] > 0;
     }
 }
 
@@ -86,9 +103,14 @@ if (!$post_details) {
 
 $likes = $post->getLikesCount();
 $comments = $post->getComments();
+$post = new ViewPost($conn, $post_id, $_SESSION['user_id'] ?? null);
+$likes = $post->getLikesCount();
+$userLiked = $post->getUserLikeStatus();
+$heartEmoji = $userLiked ? "❤️" : "🤍";
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,63 +118,108 @@ $comments = $post->getComments();
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
     <style>
         .post-container {
-            height: auto;
-            width: auto;
             display: flex;
+            flex-wrap: wrap;
             gap: 20px;
+            margin-top: 20px;
         }
+
         .post-image {
-            flex: 2;
-        }
-        .post-comments {
-            flex: 1;
-            margin-top: 50px;
-            margin-right: 120px;
-            
+            flex: 1 1 300px;
+            text-align: center;
         }
 
         .post-image img {
-            width: 300px;
+            max-width: 100%;
             height: auto;
-            object-fit: cover;
-            margin-left: 250px;
+            border-radius: 10px;
+        }
+
+        .post-details {
+            flex: 2 1 500px;
+        }
+
+        .post-comments {
+            margin-top: 20px;
+        }
+
+        .comment-form textarea {
+            resize: none;
         }
     </style>
 </head>
+
 <body>
     <?php include '../../includes/navbar.php'; ?>
     <div class="container mt-5">
         <div class="post-container">
             <div class="post-image">
-                <img src="../../uploads/<?php echo $post->getImage(); ?>" class="post-image card-img-top" alt="Post image">
+                <img src="../../uploads/<?php echo $post->getImage(); ?>" alt="Post image">
             </div>
-            <div class="post-comments">
-                <h5>@<?php echo ($post_details['username']); ?></h5>
-                <p><?php echo nl2br(($post_details['content'])); ?></p>
-                <p><strong>Likes:</strong> <?php echo $likes; ?></p>
-                
+            <div class="post-details">
+                <h5 ><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></h5>
+                <p><?php echo (($post_details['content'])); ?></p>
+                <div>
+                    <button id="like-btn" class="btn btn-light" onclick="toggleLike(<?php echo $post_id; ?>)">
+                        <span id="like-icon"><?php echo $heartEmoji; ?></span> <span id="like-count"><?php echo $likes; ?></span>
+                    </button>
+                </div>
+
                 <p><strong>Posted on:</strong> <?php echo $post_details['created_at']; ?></p>
-                
-                <h4 class="mt-4">Comments</h4>
-                <ul class="list-group">
-                    <?php foreach ($comments as $comment) { ?>
-                        <li class="list-group-item">
-                            <strong>@<?php echo ($comment['username']); ?>:</strong>
-                            <?php echo nl2br(($comment['content'])); ?>
-                            <br>
-                            <small><?php echo $comment['created_at']; ?></small>
-                        </li>
-                    <?php } ?>
-                </ul>
-                
-                <h4 class="mt-4">Add a Comment</h4>
-                <form action="" method="POST">
-                    <input type="hidden" name="post_id" value="<?php echo $post_id; ?>">
-                    <textarea name="comment" class="form-control" required></textarea>
-                    <button type="submit" class="btn btn-primary mt-2">Comment</button>
-                </form>
+
+                <div class="post-comments">
+                    <h4>Comments</h4>
+                    <ul class="list-group">
+                        <?php foreach ($comments as $comment) { ?>
+                            <li class="list-group-item">
+                                <strong><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></strong>
+                                <?php echo (($comment['content'])); ?>
+                                <br>
+                                <small><?php echo $comment['created_at']; ?></small>
+                            </li>
+                        <?php } ?>
+                    </ul>
+                </div>
+
+                <div class="comment-form mt-4">
+                    <h4>Add a Comment</h4>
+                    <form action="" method="POST">
+                        <input type="hidden" name="post_id" value="<?php echo $post_id; ?>">
+                        <textarea name="comment" class="form-control" rows="3" required></textarea>
+                        <button type="submit" class="btn btn-primary mt-2">Comment</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    <script src="../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleLike(postId) {
+            let likeBtn = document.getElementById("like-btn");
+            let likeIcon = document.getElementById("like-icon");
+            let likeCount = document.getElementById("like-count");
+
+            let formData = new FormData();
+            formData.append("action", "toggle_like");
+            formData.append("post_id", postId);
+
+            fetch("../../views/user/likes.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        likeIcon.innerHTML = data.liked ? "❤️" : "🤍";
+                        likeCount.innerText = data.count;
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+
 </body>
+
 </html>

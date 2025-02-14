@@ -238,6 +238,7 @@ try {
         <h5 id="flyout-title"></h5>
         <ul id="flyout-list" style="list-style: none; padding: 0;"></ul>
     </div>
+    
 
 
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
@@ -287,6 +288,11 @@ try {
 
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('flyout').style.display = 'block';
+        }
+
+        function closeFlyout() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('flyout').style.display = 'none';
         }
     </script>
     </script>
