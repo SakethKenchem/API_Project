@@ -54,14 +54,14 @@ class UserProfile
 
     public function getFollowers()
     {
-        $stmt = $this->conn->prepare("SELECT users.username FROM followers JOIN users ON followers.follower_id = users.id WHERE followers.following_id = ?");
+        $stmt = $this->conn->prepare("SELECT users.id, users.username FROM followers JOIN users ON followers.follower_id = users.id WHERE followers.following_id = ?");
         $stmt->execute([$this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getFollowing()
     {
-        $stmt = $this->conn->prepare("SELECT users.username FROM followers JOIN users ON followers.following_id = users.id WHERE followers.follower_id = ?");
+        $stmt = $this->conn->prepare("SELECT users.id, users.username FROM followers JOIN users ON followers.following_id = users.id WHERE followers.follower_id = ?");
         $stmt->execute([$this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -267,20 +267,26 @@ try {
             let list = type === 'followers' ? <?php echo json_encode($followers); ?> : <?php echo json_encode($following); ?>;
             let flyoutList = document.getElementById('flyout-list');
             let flyoutTitle = document.getElementById('flyout-title');
+
             flyoutList.innerHTML = '';
             flyoutTitle.innerText = title;
+
             list.forEach(user => {
                 let li = document.createElement('li');
-                li.textContent = user.username;
+                let a = document.createElement('a');
+                a.href = `view_profile.php?user_id=${user.id}`;
+                a.textContent = user.username;
+                a.style.textDecoration = 'none';
+                a.style.color = '#007bff';
+                a.onmouseover = () => a.style.textDecoration = 'underline';
+                a.onmouseout = () => a.style.textDecoration = 'none';
+
+                li.appendChild(a);
                 flyoutList.appendChild(li);
             });
+
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('flyout').style.display = 'block';
-        }
-
-        function closeFlyout() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('flyout').style.display = 'none';
         }
     </script>
     </script>

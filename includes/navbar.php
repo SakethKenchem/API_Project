@@ -86,6 +86,15 @@ $user = new Navbar($conn);
                         <li class="nav-item">
                             <a class="nav-link" href="create_post.php">Create Post</a>
                         </li>
+                    <?php endif; ?>
+                </ul>
+                <!-- Commented out the search bar -->
+                <!-- <form class="d-flex" role="search" method="GET" action="search.php">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search" required>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form> -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <?php if ($user->isLoggedIn()): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="<?= ($user->getProfileLink()) ?>">
                                 <img src="<?= ($user->getProfilePic()) ?>" alt="Profile" class="navbar-profile-pic">
@@ -97,10 +106,6 @@ $user = new Navbar($conn);
                         </li>
                     <?php endif; ?>
                 </ul>
-                <form class="d-flex" role="search" method="GET" action="search.php">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search" required>
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
             </div>
         </div>
     </nav>

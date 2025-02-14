@@ -47,14 +47,14 @@ class UserProfile
 
     public function getFollowers()
     {
-        $stmt = $this->conn->prepare("SELECT users.username FROM followers JOIN users ON followers.follower_id = users.id WHERE followers.following_id = ?");
+        $stmt = $this->conn->prepare("SELECT users.id, users.username FROM followers JOIN users ON followers.follower_id = users.id WHERE followers.following_id = ?");
         $stmt->execute([$this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getFollowing()
     {
-        $stmt = $this->conn->prepare("SELECT users.username FROM followers JOIN users ON followers.following_id = users.id WHERE followers.follower_id = ?");
+        $stmt = $this->conn->prepare("SELECT users.id, users.username FROM followers JOIN users ON followers.following_id = users.id WHERE followers.follower_id = ?");
         $stmt->execute([$this->user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -141,27 +141,24 @@ $following = $userProfile->getFollowing();
         }
 
         .posts-container {
-            max-width: fit-content;
-            height: auto;
+            max-width: 900px;
             margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            padding: 10px;
         }
 
-        .posts-container :hover {
+        .post-item img {
+            width: fit-content;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .post-item img:hover {
             transform: scale(1.05);
-        }
-
-        .post-item {
-            margin-bottom: 20px;
-        }
-
-        .post-image {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
         }
     </style>
 </head>
@@ -201,27 +198,38 @@ $following = $userProfile->getFollowing();
     </div>
 
     <script>
-        function showFlyout(type) {
-            let title = type === 'followers' ? 'Followers' : 'Following';
-            let list = type === 'followers' ? <?php echo json_encode($followers); ?> : <?php echo json_encode($following); ?>;
-            let flyoutList = document.getElementById('flyout-list');
-            let flyoutTitle = document.getElementById('flyout-title');
-            flyoutList.innerHTML = '';
-            flyoutTitle.innerText = title;
-            list.forEach(user => {
-                let li = document.createElement('li');
-                li.textContent = user.username;
-                flyoutList.appendChild(li);
-            });
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('flyout').style.display = 'block';
-        }
+    function showFlyout(type) {
+        let title = type === 'followers' ? 'Followers' : 'Following';
+        let list = type === 'followers' ? <?php echo json_encode($followers); ?> : <?php echo json_encode($following); ?>;
+        let flyoutList = document.getElementById('flyout-list');
+        let flyoutTitle = document.getElementById('flyout-title');
 
-        function closeFlyout() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('flyout').style.display = 'none';
-        }
-    </script>
+        flyoutList.innerHTML = '';
+        flyoutTitle.innerText = title;
+
+        list.forEach(user => {
+            let li = document.createElement('li');
+            let a = document.createElement('a');
+            a.href = `view_profile.php?user_id=${user.id}`;
+            a.textContent = user.username;
+            a.style.textDecoration = 'none';
+            a.style.color = '#007bff';
+            a.onmouseover = () => a.style.textDecoration = 'underline';
+            a.onmouseout = () => a.style.textDecoration = 'none';
+
+            li.appendChild(a);
+            flyoutList.appendChild(li);
+        });
+
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('flyout').style.display = 'block';
+    }
+
+    function closeFlyout() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('flyout').style.display = 'none';
+    }
+</script>
 </body>
 
 </html>
