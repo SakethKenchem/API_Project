@@ -78,13 +78,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Post</title>
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        .form-control, .btn {
+            border-radius: 0.25rem;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">Create a Post</h1>
+    <div class="container">
+        <h1 class="text-center mb-4">Create a Post</h1>
         <?php if (!empty($message)) echo $message; ?>
 
-        <form action="create_post.php" method="POST" enctype="multipart/form-data" class="mt-4">
+        <form action="create_post.php" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <textarea class="form-control" name="content" rows="3" placeholder="What's on your mind?" required></textarea>
             </div>
