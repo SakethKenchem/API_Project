@@ -1,5 +1,6 @@
 <?php
 require_once '../../includes/db.php'; // Database connection
+include '../admin/admin_navbar.php';
 
 class AdminStats {
     private $conn;
