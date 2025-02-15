@@ -194,6 +194,9 @@ $posts = $dashboard->getPosts();
     <div class="flyout" id="flyout">
         <h5 id="flyout-title">Comments</h5>
         <ul id="flyout-list" style="list-style: none; padding: 0;"></ul>
+        <!-- Add comment section in the flyout -->
+        <input type="text" class="form-control flyout-comment-input" placeholder="Write a comment..." required>
+        <button class="btn btn-primary btn-sm flyout-add-comment">Post</button>
     </div>
 
     <script>
@@ -234,6 +237,32 @@ $posts = $dashboard->getPosts();
 
                 document.getElementById('overlay').style.display = 'block';
                 document.getElementById('flyout').style.display = 'block';
+            });
+
+            // Handle adding comments in the flyout
+            $('.flyout-add-comment').click(function() {
+                const postId = $('.view-comments').data('post-id');
+                const commentInput = $('.flyout-comment-input');
+                const commentContent = commentInput.val();
+
+                if (commentContent.trim() !== '') {
+                    $.post("comments.php", { 
+                        action: 'add_comment',
+                        post_id: postId,
+                        content: commentContent
+                    }, function(response) {
+                        const data = JSON.parse(response);
+                        if (data.status === 'success') {
+                            let li = document.createElement('li');
+                            li.setAttribute('data-comment-id', data.comment.id);
+                            li.innerHTML = `<strong><a href="../../views/user/view_profile.php?user_id=${data.comment.user_id}" style="text-decoration: none; color: black;">${data.comment.username}</a>:</strong> <span class="comment-content">${data.comment.content}</span> 
+                                <button class="edit-comment btn btn-sm btn-link">Edit</button>
+                                <button class="delete-comment btn btn-sm btn-link">Delete</button>`;
+                            document.getElementById('flyout-list').appendChild(li);
+                            commentInput.val(''); // Clear the input field
+                        }
+                    });
+                }
             });
         });
 

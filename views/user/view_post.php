@@ -4,6 +4,12 @@ session_start();
 
 require '../../includes/db.php';
 
+//if not logged in, redirect to login page
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 class ViewPost
 {
     private $conn;

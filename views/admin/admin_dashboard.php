@@ -2,7 +2,6 @@
 session_start();
 require '../../includes/db.php';
 
-
 if (!isset($_SESSION['admin_id'])) {
     header('Location: admin_login.php');
     exit;
@@ -16,7 +15,6 @@ class AdminDashboard
     {
         $this->conn = $conn;
     }
-
 
     public function fetchUsers($search = '')
     {
@@ -33,10 +31,25 @@ class AdminDashboard
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
     public function deleteUser($id)
     {
         $query = "DELETE FROM users WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function fetchPosts()
+    {
+        $query = "SELECT id, content, image_url FROM posts";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deletePost($id)
+    {
+        $query = "DELETE FROM posts WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
@@ -45,12 +58,19 @@ class AdminDashboard
 
 $dashboard = new AdminDashboard($conn);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $id = intval($_POST['id']);
-    $dashboard->deleteUser($id);
-    echo json_encode(['success' => true]);
+    
+    if ($_POST['action'] === 'delete_user') {
+        $dashboard->deleteUser($id);
+        echo json_encode(['success' => true]);
+    } elseif ($_POST['action'] === 'delete_post') {
+        $dashboard->deletePost($id);
+        echo json_encode(['success' => true]);
+    }
     exit;
 }
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
     $search = trim($_GET['search']);
     $users = $dashboard->fetchUsers($search);
@@ -58,7 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetch'] === 'posts') {
+    $posts = $dashboard->fetchPosts();
+    echo json_encode($posts);
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -72,6 +98,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
             cursor: pointer;
             color: red;
         }
+
+        .post-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .post-image:hover {
+            cursor: pointer;
+        }
+
+        .scrollable-table {
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
@@ -83,81 +124,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
         <div class="mb-3">
             <input type="text" id="search" class="form-control" placeholder="Search by username or email">
         </div>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="admin-table">
+        
+        <h3>Users</h3>
+        <div class="scrollable-table">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-table"></tbody>
+            </table>
+        </div>
 
-            </tbody>
-        </table>
+        <h3 class="mt-5">Posts</h3>
+        <div class="scrollable-table">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Content</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="posts-table"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="postModalLabel">Post Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p id="postContent"></p>
+                    <img id="postImage" src="" alt="Post image" class="img-fluid">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function fetchAdmins(search = '') {
-            $.ajax({
-                url: 'admin_dashboard.php',
-                type: 'GET',
-                data: {
-                    search: search
-                },
-                success: function(data) {
-                    const admins = JSON.parse(data);
-                    const adminTable = $('#admin-table');
-                    adminTable.empty();
-
-                    if (admins.length === 0) {
-                        adminTable.append('<tr><td colspan="4" class="text-center">No records found</td></tr>');
-                    } else {
-                        admins.forEach(admin => {
-                            adminTable.append(`
-                            <tr>
-                                <td>${admin.id}</td>
-                                <td>${admin.username}</td>
-                                <td>${admin.email}</td>
-                                <td><span class="delete-btn" data-id="${admin.id}">Delete</span></td>
-                            </tr>
-                        `);
-                        });
-                    }
-                }
-            });
-        }
-
-
-        fetchAdmins();
-
-
-        $('#search').on('input', function() {
-            const search = $(this).val();
-            fetchAdmins(search);
-        });
-
-
-        $(document).on('click', '.delete-btn', function() {
-            if (confirm('Are you sure you want to delete this user?')) {
-                const id = $(this).data('id');
-                $.ajax({
-                    url: 'admin_dashboard.php',
-                    type: 'POST',
-                    data: {
-                        action: 'delete',
-                        id: id
-                    },
-                    success: function() {
-                        fetchAdmins();
-                    }
+    function fetchAdmins(search = '') {
+        $.ajax({
+            url: 'admin_dashboard.php',
+            type: 'GET',
+            data: { search: search },
+            success: function(data) {
+                const admins = JSON.parse(data);
+                const adminTable = $('#admin-table');
+                adminTable.empty();
+                admins.slice(0, 3).forEach(admin => {
+                    adminTable.append(`
+                        <tr>
+                            <td>${admin.id}</td>
+                            <td>${admin.username}</td>
+                            <td>${admin.email}</td>
+                            <td><span class="delete-btn" data-id="${admin.id}" data-type="user">Delete</span></td>
+                        </tr>
+                    `);
                 });
             }
         });
+    }
+
+    function fetchPosts() {
+        $.ajax({
+            url: 'admin_dashboard.php',
+            type: 'GET',
+            data: { fetch: 'posts' },
+            success: function(data) {
+                const posts = JSON.parse(data);
+                const postsTable = $('#posts-table');
+                postsTable.empty();
+                posts.slice(0, 3).forEach(post => {
+                    let imageUrl = `../../uploads/${post.image_url}`;
+                    postsTable.append(`
+                        <tr>
+                            <td>${post.id}</td>
+                            <td>${post.content}</td>
+                            <td>
+                                ${post.image_url ? `<img src="${imageUrl}" class="post-image" alt="Post image" data-content="${post.content}" data-image-url="${imageUrl}">` : ''}
+                            </td>
+                            <td><span class="delete-btn" data-id="${post.id}" data-type="post">Delete</span></td>
+                        </tr>
+                    `);
+                });
+            }
+        });
+    }
+
+    fetchAdmins();
+    fetchPosts();
+
+    $('#search').on('input', function() {
+        fetchAdmins($(this).val());
+    });
+
+    $(document).on('click', '.delete-btn', function() {
+        if (confirm('Are you sure you want to delete this?')) {
+            const id = $(this).data('id');
+            const type = $(this).data('type');
+            $.ajax({
+                url: 'admin_dashboard.php',
+                type: 'POST',
+                data: { action: type === 'user' ? 'delete_user' : 'delete_post', id: id },
+                success: function() {
+                    if (type === 'user') fetchAdmins();
+                    else fetchPosts();
+                }
+            });
+        }
+    });
+
+    $(document).on('click', '.post-image', function() {
+        $('#postContent').text($(this).data('content'));
+        $('#postImage').attr('src', $(this).data('image-url'));
+        $('#postModal').modal('show');
+    });
     </script>
 </body>
-
 </html>

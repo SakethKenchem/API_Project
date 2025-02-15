@@ -149,8 +149,12 @@ $following = $userProfile->getFollowing();
             padding: 10px;
         }
 
+        .post-item {
+            margin: 10px;
+        }
+
         .post-item img {
-            width: fit-content;
+            width: 100%;
             height: 200px;
             object-fit: cover;
             border-radius: 5px;
@@ -159,6 +163,11 @@ $following = $userProfile->getFollowing();
 
         .post-item img:hover {
             transform: scale(1.05);
+        }
+
+        .single-post {
+            max-width: 200px;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -180,6 +189,12 @@ $following = $userProfile->getFollowing();
     <div class="posts-container">
         <?php if (empty($posts)): ?>
             <p class="text-center">This user has not posted anything yet.</p>
+        <?php elseif (count($posts) === 1): ?>
+            <div class="post-item single-post">
+                <a href="../../views/user/view_post.php?post_id=<?= $posts[0]['id'] ?>">
+                    <img src="../../uploads/<?= ($posts[0]['image_url']) ?>" class="post-image card-img-top" alt="Post image">
+                </a>
+            </div>
         <?php else: ?>
             <?php foreach ($posts as $post): ?>
                 <div class="post-item">
@@ -229,7 +244,7 @@ $following = $userProfile->getFollowing();
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('flyout').style.display = 'none';
     }
-</script>
+    </script>
 </body>
 
 </html>

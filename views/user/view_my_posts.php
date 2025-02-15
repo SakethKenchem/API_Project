@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../../includes/db.php';
 
 class PostManager {
@@ -21,8 +22,6 @@ class PostManager {
         $stmt->execute([$post_id, $this->user_id]);
     }
 }
-
-session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -54,7 +53,10 @@ $posts = $postManager->getPosts();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .post-card { margin-bottom: 20px; }
-        .post-image { height: 200px; object-fit: cover; }
+        .post-image { 
+            height: 200px; 
+            object-fit: cover;
+         }
     </style>
 </head>
 <body>
