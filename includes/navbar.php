@@ -87,7 +87,7 @@ $user = new Navbar($conn);
                             <a class="nav-link" href="create_post.php">Create Post</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="messages.php">Messages</a>
+                            <a class="nav-link" href="dms.php">Messages</a>
                         </li>
                     <?php endif; ?>
                 </ul>
