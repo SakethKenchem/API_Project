@@ -117,9 +117,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetc
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="background-color: #343a40; padding: 1rem;">
+        <div class="container">
+            <a class="navbar-brand" href="#" style="color: #fff;">Admin Dashboard</a>
+
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto"></ul>
+
+                
+                <!-- stats -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a href="admin_stats.php" class="nav-link" style="color: #fff;">Stats</a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a href="admin_logout.php" class="nav-link" style="color: #fff;">Logout</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </nav>
     <div class="container mt-5">
         <h3 class="mb-4">Welcome, <?= htmlspecialchars($_SESSION['admin_username']); ?>!</h3>
-        <a href="admin_logout.php" class="btn btn-secondary mb-4">Logout</a>
+        <!-- <a href="admin_logout.php" class="btn btn-secondary mb-4">Logout</a> -->
 
         <div class="mb-3">
             <input type="text" id="search" class="form-control" placeholder="Search by username or email">
