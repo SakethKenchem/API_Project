@@ -128,6 +128,7 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
             flex-wrap: wrap;
             gap: 20px;
             margin-top: 20px;
+            margin-bottom: 20px;
         }
 
         .post-image {
