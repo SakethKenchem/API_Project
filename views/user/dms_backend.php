@@ -2,6 +2,7 @@
 session_name("user_session");
 session_start();
 require '../../includes/db.php';
+require '../../config.php';
 
 class DMSBackend {
     private $conn;
@@ -18,25 +19,27 @@ class DMSBackend {
             return;
         }
 
+        $action = $_GET['action'] ?? $_POST['action'] ?? null;
+
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                $this->handleGet();
+                $this->handleGet($action);
                 break;
             case 'POST':
-                $this->handlePost();
+                $this->handlePost($action);
                 break;
             default:
                 $this->sendResponse(["error" => "Invalid request method"]);
         }
     }
 
-    private function handleGet() {
-        if (!isset($_GET['action'])) {
+    private function handleGet($action) {
+        if (!$action) {
             $this->sendResponse(["error" => "No action specified"]);
             return;
         }
 
-        switch ($_GET['action']) {
+        switch ($action) {
             case 'fetch':
                 $this->fetchMessages();
                 break;
@@ -51,13 +54,13 @@ class DMSBackend {
         }
     }
 
-    private function handlePost() {
-        if (!isset($_POST['action'])) {
+    private function handlePost($action) {
+        if (!$action) {
             $this->sendResponse(["error" => "No action specified"]);
             return;
         }
 
-        switch ($_POST['action']) {
+        switch ($action) {
             case 'send':
                 $this->sendMessage();
                 break;
@@ -84,9 +87,10 @@ class DMSBackend {
     }
 
     private function fetchUsers() {
-        $stmt = $this->conn->prepare("SELECT id, username, profile_pic FROM users WHERE id != ?");
+        $stmt = $this->conn->prepare("SELECT id, username, COALESCE(profile_pic, '../../assets/default-avatar.png') AS profile_pic FROM users WHERE id != ?");
         $stmt->execute([$this->currentUser]);
-        $this->sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->sendResponse($users);
     }
 
     private function searchUsers() {
@@ -96,9 +100,10 @@ class DMSBackend {
         }
 
         $query = "%" . $_GET['query'] . "%";
-        $stmt = $this->conn->prepare("SELECT id, username, profile_pic FROM users WHERE username LIKE ? AND id != ?");
+        $stmt = $this->conn->prepare("SELECT id, username, COALESCE(profile_pic, '../../assets/default-avatar.png') AS profile_pic FROM users WHERE username LIKE ? AND id != ?");
         $stmt->execute([$query, $this->currentUser]);
-        $this->sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->sendResponse($users);
     }
 
     private function sendMessage() {
@@ -118,6 +123,13 @@ class DMSBackend {
         $stmt = $this->conn->prepare("INSERT INTO messages (sender_id, receiver_id, message) VALUES (?, ?, ?)");
         $stmt->execute([$this->currentUser, $otherUser, $message]);
         $this->sendResponse(["success" => true]);
+    }
+
+    private function getProfilePic($userId) {
+        $stmt = $this->conn->prepare("SELECT profile_pic FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['profile_pic'] ? '../../uploads/' . $result['profile_pic'] : '../../assets/default-avatar.png';
     }
 
     private function sendResponse($data) {
