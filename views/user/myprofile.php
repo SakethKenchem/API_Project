@@ -188,7 +188,7 @@ $following = $userProfile->getFollowing();
     <!-- User Posts -->
     <div class="posts-container">
         <?php if (empty($posts)): ?>
-            <p class="text-center">This user has not posted anything yet.</p>
+            <p class="text-center">Click <a href="../user/create_post.php">create post</a>, and start sharing!</p>
         <?php elseif (count($posts) === 1): ?>
             <div class="post-item single-post">
                 <a href="../../views/user/view_post.php?post_id=<?= $posts[0]['id'] ?>">

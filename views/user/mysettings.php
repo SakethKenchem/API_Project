@@ -118,9 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
 
     if (
         $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-        && $imageFileType != "gif"
+        && $imageFileType != "gif" && $imageFileType != "webp"
     ) {
-        $message = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+        $message = "Sorry, only JPG, JPEG, PNG, WEBP & GIF files are allowed.";
         $uploadOk = 0;
     }
 

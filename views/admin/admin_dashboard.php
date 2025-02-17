@@ -368,6 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $('#postInfo').html(`
             Posted by: ${$this.data('username')}<br>
             Created: ${new Date($this.data('created')).toLocaleString()}
+            
         `);
         $('#postModal').modal('show');
     });

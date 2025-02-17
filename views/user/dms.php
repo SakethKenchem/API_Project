@@ -155,7 +155,7 @@ $currentUser = $_SESSION['user_id'];
 
 <div class="container">
     <div class="sidebar">
-        <input type="text" id="search-users" class="form-control mb-2" placeholder="Search users...">
+        <input type="text" id="search-users" class="form-control mb-2" placeholder="Search users..." onkeyup="searchUsers()">
         <div id="users-list"></div>
     </div>
 
@@ -184,6 +184,18 @@ $currentUser = $_SESSION['user_id'];
                              </div>`;
             });
             $('#users-list').html(userList);
+        });
+    }
+
+    function searchUsers() {
+        let filter = $('#search-users').val().toLowerCase();
+        $('.user').each(function() {
+            let username = $(this).text().toLowerCase();
+            if (username.includes(filter)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
         });
     }
 
