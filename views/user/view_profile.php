@@ -105,104 +105,101 @@ try {
     <title><?php echo ($user['username']); ?>'s Profile</title>
     <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+    body {
+        background-color: #f8f9fa;
+    }
 
-        .profile-card {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+    .profile-card {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
 
-        .profile-pic {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #ddd;
-        }
+    .profile-pic {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #ddd;
+    }
 
-        .bio {
-            font-size: 16px;
-            color: #555;
-            margin-top: 10px;
-        }
+    .bio {
+        font-size: 16px;
+        color: #555;
+        margin-top: 10px;
+    }
 
-        .posts-container {
-            max-width: 900px;
-            margin: 20px auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            /* Adjusted gap to create space between posts */
-            padding: 10px;
-        }
+    .posts-container {
+        max-width: 900px;
+        margin: 20px auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px; /* Adjusted gap to create space between posts */
+        padding: 10px;
+    }
 
-        .post-item {
-            margin-bottom: 10px;
-            /* Add margin to create space between posts */
-        }
+    .post-item {
+        margin-bottom: 10px; /* Add margin to create space between posts */
+    }
 
-        .post-item img {
-            width: fit-content;
-            /* Adjusted width to fit the container */
-            height: 250px;
-            object-fit: cover;
-            border-radius: 5px;
-            transition: transform 0.3s ease;
-        }
+    .post-item img {
+        width: 100%; /* Adjusted width to fit the container */
+        height: 200px;
+        object-fit: cover;
+        border-radius: 5px;
+        transition: transform 0.3s ease;
+    }
 
-        .post-item img:hover {
-            transform: scale(1.05);
-        }
+    .post-item img:hover {
+        transform: scale(1.05);
+    }
 
-        .follow-btn {
-            margin-top: 10px;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    .follow-btn {
+        margin-top: 10px;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
 
-        .follow-stats {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 10px;
-            font-size: 18px;
-        }
+    .follow-stats {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+        font-size: 18px;
+    }
 
-        .flyout {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            text-align: center;
-        }
+    .flyout {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        text-align: center;
+    }
 
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-        }
-    </style>
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
+</style>
 </head>
 
 <body>
@@ -245,7 +242,7 @@ try {
         <h5 id="flyout-title"></h5>
         <ul id="flyout-list" style="list-style: none; padding: 0;"></ul>
     </div>
-
+    
 
 
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>

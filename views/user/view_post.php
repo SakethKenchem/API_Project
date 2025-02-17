@@ -148,6 +148,9 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
 
         .post-comments {
             margin-top: 20px;
+            max-height: 300px;
+            /* Adjust the height as needed */
+            overflow-y: auto;
         }
 
         .comment-form textarea {
@@ -164,7 +167,7 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                 <img src="../../uploads/<?php echo $post->getImage(); ?>" alt="Post image">
             </div>
             <div class="post-details">
-                <h5 ><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></h5>
+                <h5><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></h5>
                 <p><?php echo (($post_details['content'])); ?></p>
                 <div>
                     <button id="like-btn" class="btn btn-light" onclick="toggleLike(<?php echo $post_id; ?>)">
@@ -177,7 +180,9 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                 <div class="post-comments">
                     <h4>Comments</h4>
                     <ul class="list-group">
-                        <?php foreach ($comments as $comment) { ?>
+                        <?php
+                        $commentsToShow = array_slice($comments, 0, 4); // Show only the first 4 comments
+                        foreach ($commentsToShow as $comment) { ?>
                             <li class="list-group-item">
                                 <strong><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></strong>
                                 <?php echo (($comment['content'])); ?>
@@ -186,6 +191,9 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                             </li>
                         <?php } ?>
                     </ul>
+                    <?php if (count($comments) > 4) { ?>
+                        <button class="btn btn-link" onclick="showAllComments()">Show all comments</button>
+                    <?php } ?>
                 </div>
 
                 <div class="comment-form mt-4">
@@ -224,6 +232,19 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                     }
                 })
                 .catch(error => console.error("Error:", error));
+        }
+
+        function showAllComments() {
+            let commentsList = document.querySelector('.post-comments ul');
+            commentsList.innerHTML = `<?php foreach ($comments as $comment) { ?>
+                <li class="list-group-item">
+                    <strong><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></strong>
+                    <?php echo (($comment['content'])); ?>
+                    <br>
+                    <small><?php echo $comment['created_at']; ?></small>
+                </li>
+            <?php } ?>`;
+            document.querySelector('.post-comments button').style.display = 'none';
         }
     </script>
 
