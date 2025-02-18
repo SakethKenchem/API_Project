@@ -298,35 +298,29 @@ $comments = $userProfile->getComments();
                                 <?php foreach ($comments as $comment): ?>
                                     <li class="list-group-item">
                                         <p>
-                                            <strong>On post:</strong> <?= ($comment['post_content']) ?>
+                                            <strong>On Post: </strong><a href="../../views/user/view_post.php?id=<?= htmlspecialchars($comment['post_id']) ?>" style="text-decoration: none; color: black;"><?= htmlspecialchars($comment['post_content']) ?></a>
                                             <br>
                                             <strong>Comment:</strong>
                                             <span id="comment-content-<?= $comment['id'] ?>">
-                                                <?= ($comment['content']) ?>
+                                                <?= htmlspecialchars($comment['content']) ?>
                                             </span>
                                         </p>
-                                        <small>Posted on: <?= (date('F j, Y, g:i a', strtotime($comment['created_at']))) ?></small>
+                                        <small>Posted on: <?= date('F j, Y, g:i a', strtotime($comment['created_at'])) ?></small>
                                         <div class="comment-actions">
                                             <button onclick="editComment(<?= $comment['id'] ?>)">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <button onclick="deleteComment(<?= $comment['id'] ?>)"
-                                                class="btn btn-danger btn-sm">
+                                            <button onclick="deleteComment(<?= $comment['id'] ?>)" class="btn btn-danger btn-sm">
                                                 <i class="fas fa-trash"></i> Delete
                                             </button>
                                         </div>
                                         <div id="edit-form-<?= $comment['id'] ?>" style="display:none;">
                                             <div class="form-group">
                                                 <label for="comment-content">Edit Comment:</label>
-                                                <textarea class="form-control" id="comment-edit-input-<?= $comment['id'] ?>"
-                                                    rows="3"><?= ($comment['content']) ?></textarea>
+                                                <textarea class="form-control" id="comment-edit-input-<?= $comment['id'] ?>" rows="3"><?= htmlspecialchars($comment['content']) ?></textarea>
                                             </div>
-                                            <button onclick="saveComment(<?= $comment['id'] ?>)"
-                                                class="btn btn-primary btn-sm">Save
-                                            </button>
-                                            <button onclick="cancelEdit(<?= $comment['id'] ?>)"
-                                                class="btn btn-secondary btn-sm">Cancel
-                                            </button>
+                                            <button onclick="saveComment(<?= $comment['id'] ?>)" class="btn btn-primary btn-sm">Save</button>
+                                            <button onclick="cancelEdit(<?= $comment['id'] ?>)" class="btn btn-secondary btn-sm">Cancel</button>
                                         </div>
                                     </li>
                                 <?php endforeach; ?>

@@ -61,7 +61,7 @@ $user = $dashboard->getUserInfo();
 $posts = $dashboard->getPosts();
 ?>
 
-<!DOCTYPE html>
+`<!DOCTYPE html>
 <html lang="en">
 
 <head>

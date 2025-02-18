@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $upload_dir = '../../uploads/';
         $target_file = $upload_dir . basename($_FILES['image']['name']);
         $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-        $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowed_types = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4'];
 
         if (in_array($imageFileType, $allowed_types)) {
             if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "<div class='alert alert-danger'>Error uploading the image.</div>";
             }
         } else {
-            $message = "<div class='alert alert-danger'>Invalid file type. Only JPG, JPEG, PNG, and GIF allowed.</div>";
+            $message = "<div class='alert alert-danger'>Invalid file type. Only JPG, MP4, JPEG, PNG, WEBP and GIF allowed.</div>";
         }
     }
 
