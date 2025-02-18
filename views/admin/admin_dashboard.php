@@ -67,6 +67,27 @@ class AdminDashboard
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    public function countUsers()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) FROM users");
+        return $stmt->fetchColumn();
+    }
+
+    public function countPosts()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) FROM posts");
+        return $stmt->fetchColumn();
+    }
+
+    //count daily login using otp codes generated
+    public function countDailyLogins()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) FROM otp_codes WHERE DATE(created_at) = CURDATE()");
+        return $stmt->fetchColumn();
+    }
+
+
 }
 
 $dashboard = new AdminDashboard($conn);
@@ -170,6 +191,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         <div class="row">
             <div class="col-md-6">
                 <h3>Users</h3>
+                <!--box with user count-->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card text-white bg-primary mb-3">
+                            <div class="card-header">Users</div>
+                            <div class="card-body">
+                                <h5 class="card-title"><?= $dashboard->countUsers(); ?></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card text-white bg-success mb-3">
+                            <div class="card-header">Posts</div>
+                            <div class="card-body">
+                                <h5 class="card-title"><?= $dashboard->countPosts(); ?></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <!--box with daily login count-->
+                    <div class="col-md-6">
+                        <div class="card text-white bg-warning mb-3">
+                            <div class="card-header">Daily Logins</div>
+                            <div class="card-body">
+                                <h5 class="card-title
+                                "><?= $dashboard->countDailyLogins(); ?></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="search-container mb-3">
                     <input type="text" id="search-users" class="form-control" placeholder="Search users...">
                     <span class="search-icon">
