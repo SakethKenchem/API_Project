@@ -186,7 +186,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     <div class="container mt-5">
         <h3 class="mb-4">Welcome, <?= htmlspecialchars($_SESSION['admin_username']); ?>!</h3>
-        <a href="admin_logout.php" class="btn btn-secondary mb-4">Logout</a>
 
         <div class="row">
             <div class="col-md-6">

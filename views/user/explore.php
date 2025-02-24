@@ -45,22 +45,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetc
             font-family: Arial, sans-serif;
         }
         .explore-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
-            padding: 20px;
+            column-count: 4;
+            column-gap: 10px;
+            padding: 15px;
         }
         .post-item {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 10px;
             position: relative;
             cursor: pointer;
             overflow: hidden;
             transition: transform 0.2s;
+            border-radius: 8px;
         }
         .post-item img {
             width: 100%;
             height: auto;
+            max-height: 200px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 8px;
             transition: transform 0.3s;
         }
         .post-item:hover img {
@@ -71,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetc
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0);
-            font-size: 50px;
+            font-size: 40px;
             color: red;
             opacity: 0.8;
             transition: transform 0.3s ease;
@@ -103,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetc
                     container.append(`
                         <div class="post-item" data-id="${post.id}">
                             <a href="../../views/user/view_post.php?post_id=${post.id}">
-                                <img src="../../uploads/${post.image_url}" class="post-image card-img-top" alt="Post image">
+                                <img src="../../uploads/${post.image_url}" class="post-image" alt="Post image">
                             </a>
                             <div class="like-overlay">❤️</div>
                         </div>
@@ -131,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['fetch']) && $_GET['fetc
         
         $(document).on('click', '.post-item', function() {
             const postId = $(this).data('id');
-            window.location.href = `view_post.php?id=${postId}`;
+            window.location.href = `../../views/user/view_post.php?post_id=${postId}`;
         });
     });
     </script>

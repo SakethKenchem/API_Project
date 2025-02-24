@@ -107,10 +107,18 @@ if (!$post_details) {
     die('Post not found');
 }
 
+$content = $post_details['content'];
+$words = explode(" ", $content);
+if (count($words) > 56) {
+    $truncated = implode(" ", array_slice($words, 0, 56)) . "...";
+    $fullContent = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+} else {
+    $truncated = $content;
+    $fullContent = "";
+}
+
 $likes = $post->getLikesCount();
 $comments = $post->getComments();
-$post = new ViewPost($conn, $post_id, $_SESSION['user_id'] ?? null);
-$likes = $post->getLikesCount();
 $userLiked = $post->getUserLikeStatus();
 $heartEmoji = $userLiked ? "❤️" : "🤍";
 ?>
@@ -168,7 +176,11 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
             </div>
             <div class="post-details">
                 <h5><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></h5>
-                <p><?php echo (($post_details['content'])); ?></p>
+                <p id="post-content"> <?php echo $truncated; ?> </p>
+                <?php if ($fullContent) { ?>
+                    <button id="read-more" class="btn btn-link" onclick="showFullContent()">Read More</button>
+                    <p id="full-content" style="display: none;"><?php echo $fullContent; ?></p>
+                <?php } ?>
                 <div>
                     <button id="like-btn" class="btn btn-light" onclick="toggleLike(<?php echo $post_id; ?>)">
                         <span id="like-icon"><?php echo $heartEmoji; ?></span> <span id="like-count"><?php echo $likes; ?></span>
@@ -185,7 +197,11 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                         foreach ($commentsToShow as $comment) { ?>
                             <li class="list-group-item">
                                 <strong><a style="text-decoration: none; color: black;" href="view_profile.php?user_id=<?php echo $post_details['user_id']; ?>">@<?php echo ($post_details['username']); ?></a></strong>
-                                <?php echo (($comment['content'])); ?>
+                                <p id="post-content"> <?php echo $truncated; ?> </p>
+                                <?php if ($fullContent) { ?>
+                                    <button id="read-more" class="btn btn-link" onclick="showFullContent()">Read More</button>
+                                    <p id="full-content" style="display: none;"><?php echo $fullContent; ?></p>
+                                <?php } ?>
                                 <br>
                                 <small><?php echo $comment['created_at']; ?></small>
                             </li>
@@ -245,6 +261,12 @@ $heartEmoji = $userLiked ? "❤️" : "🤍";
                 </li>
             <?php } ?>`;
             document.querySelector('.post-comments button').style.display = 'none';
+        }
+
+        function showFullContent() {
+            document.getElementById("post-content").style.display = "none";
+            document.getElementById("full-content").style.display = "block";
+            document.getElementById("read-more").style.display = "none";
         }
     </script>
 

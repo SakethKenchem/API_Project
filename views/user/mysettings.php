@@ -96,8 +96,30 @@ class UserProfileSettings
     }
 }
 
+class PostManager {
+    private $conn;
+    private $user_id;
+
+    public function __construct($conn, $user_id) {
+        $this->conn = $conn;
+        $this->user_id = $user_id;
+    }
+
+    public function getPosts() {
+        $stmt = $this->conn->prepare("SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$this->user_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deletePost($post_id) {
+        $stmt = $this->conn->prepare("DELETE FROM posts WHERE id = ? AND user_id = ?");
+        $stmt->execute([$post_id, $this->user_id]);
+    }
+}
+
 $message = '';
 $userProfile = new UserProfileSettings($conn, $_SESSION['user_id']);
+$postManager = new PostManager($conn, $_SESSION['user_id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
     $targetDir = "../../uploads/";
@@ -154,10 +176,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userProfile = new UserProfileSettings($conn, $_SESSION['user_id']);
         }
     }
+    if (isset($_POST['delete_post'])) {
+        $post_id = $_POST['post_id'];
+        $postManager->deletePost($post_id);
+        header('Location: mysettings.php');
+        exit();
+    }
 }
 
 $userData = $userProfile->getData();
 $comments = $userProfile->getComments();
+$posts = $postManager->getPosts();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -204,6 +233,12 @@ $comments = $userProfile->getComments();
             max-height: 300px;
             overflow-y: auto;
         }
+
+        .post-card { margin-bottom: 20px; }
+        .post-image { 
+            height: 200px; 
+            object-fit: cover;
+         }
     </style>
 </head>
 
@@ -332,10 +367,33 @@ $comments = $userProfile->getComments();
             <div class="col-md-6">
                 <?php include 'view_likes.php'; ?>
             </div>
-
-            <div>
-                <?php include 'view_my_posts.php'; ?>
-
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <h2>My Posts</h2>
+                <div class="row">
+                    <?php foreach ($posts as $post): ?>
+                        <div class="col-md-4 post-card">
+                            <div class="card">
+                                <img src="../../uploads/<?= htmlspecialchars($post['image_url']) ?>" 
+                                     class="card-img-top post-image" 
+                                     alt="Post image">
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        <?= htmlspecialchars(implode(' ', array_slice(explode(' ', $post['content']), 0, 20))) . '...' ?>
+                                    </p>
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                        <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                        <button type="submit" name="delete_post" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
     </div>

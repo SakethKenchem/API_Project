@@ -61,7 +61,7 @@ $user = $dashboard->getUserInfo();
 $posts = $dashboard->getPosts();
 ?>
 
-`<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -146,15 +146,28 @@ $posts = $dashboard->getPosts();
             background: rgba(0, 0, 0, 0.5);
             z-index: 900;
         }
+
+        /* Masonry style for posts */
+        .posts-container {
+            column-count: 4;
+            column-gap: 1em;
+            grid-template-columns: repeat(4, 1fr)
+        }
+
+        .post-card {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 1em;
+        }
     </style>
 </head>
 
 <body>
     <div class="container mt-4">
         <h3 class="text-center mb-4">Welcome, <?= ($user['username']) ?></h3>
-        <div class="row">
+        <div class="posts-container">
             <?php foreach ($posts as $post): ?>
-                <div class="col-md-3 mb-4">
+                <div class="post-card">
                     <div class="card" style="width: fit-content;">
                         <?php if ($post['image_url']): ?>
                             <a href="../../views/user/view_post.php?post_id=<?= $post['id'] ?>">
@@ -171,7 +184,13 @@ $posts = $dashboard->getPosts();
                                     </a>
                                 </h6>
                             </div>
-                            <p><?= ($post['content']) ?></p>
+                            <p>
+                                <?php
+                                $words = explode(' ', $post['content']);
+                                $truncated_content = implode(' ', array_slice($words, 0, 10));
+                                echo $truncated_content . (count($words) > 10 ? '... <a href="../../views/user/view_post.php?post_id=' . $post['id'] . '">Read more</a>' : '');
+                                ?>
+                            </p>
                             <button class="like-btn" data-post-id="<?= $post['id'] ?>">
                                 <?= $post['user_liked'] ? '❤️' : '🤍' ?>
                             </button>
@@ -202,125 +221,125 @@ $posts = $dashboard->getPosts();
     </div>
 
     <script>
-    $(document).ready(function() {
-        let currentPostId = null; // Variable to store the current post ID
+        $(document).ready(function() {
+            let currentPostId = null; // Variable to store the current post ID
 
-        $('.like-btn').click(function() {
-            const btn = $(this);
-            $.post("likes.php", { 
-                action: 'toggle_like',
-                post_id: btn.data('post-id')
-            }, function(response) {
-                const data = JSON.parse(response);
-                btn.html(data.liked ? '❤️' : '🤍');
-                btn.siblings('.like-count').text(data.count + ' likes');
-            });
-        });
-
-        // Override the view-comments click event to open the flyout
-        $('.view-comments').off('click').on('click', function() {
-            currentPostId = $(this).data('post-id'); // Store the current post ID
-            loadComments(currentPostId);
-
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('flyout').style.display = 'block';
-        });
-
-        // Handle adding comments in the flyout
-        $('.flyout-add-comment').click(function() {
-            const commentInput = $('.flyout-comment-input');
-            const commentContent = commentInput.val();
-
-            if (commentContent.trim() !== '') {
-                // Disable the button to prevent multiple submissions
-                $(this).prop('disabled', true);
-
-                $.post("comments.php", { 
-                    action: 'add_comment',
-                    post_id: currentPostId, // Use the stored post ID
-                    content: commentContent
+            $('.like-btn').click(function() {
+                const btn = $(this);
+                $.post("likes.php", { 
+                    action: 'toggle_like',
+                    post_id: btn.data('post-id')
                 }, function(response) {
                     const data = JSON.parse(response);
-                    if (data.status === 'success') {
-                        commentInput.val(''); // Clear the input field
-                        loadComments(currentPostId); // Reload comments
-                    }
-                    // Re-enable the button after the request is complete
-                    $('.flyout-add-comment').prop('disabled', false);
-                });
-            }
-        });
-
-        function loadComments(postId) {
-            let flyoutList = document.getElementById('flyout-list');
-            flyoutList.innerHTML = '';
-
-            // Fetch comments for the flyout via AJAX
-            $.post("comments.php", { 
-                action: 'get_comments',
-                post_id: postId
-            }, function(response) {
-                let comments = JSON.parse(response);
-                comments.forEach(comment => {
-                    let li = document.createElement('li');
-                    li.setAttribute('data-comment-id', comment.id);
-                    li.innerHTML = `<strong><a href="../../views/user/view_profile.php?user_id=${comment.user_id}" style="text-decoration: none; color: black;">${comment.username}</a>:</strong> <span class="comment-content">${comment.content}</span> 
-                        <button class="edit-comment btn btn-sm btn-link">Edit</button>
-                        <button class="delete-comment btn btn-sm btn-link">Delete</button>`;
-                    flyoutList.appendChild(li);
+                    btn.html(data.liked ? '❤️' : '🤍');
+                    btn.siblings('.like-count').text(data.count + ' likes');
                 });
             });
-        }
-    });
 
-    function closeFlyout() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('flyout').style.display = 'none';
-    }
+            // Override the view-comments click event to open the flyout
+            $('.view-comments').off('click').on('click', function() {
+                currentPostId = $(this).data('post-id'); // Store the current post ID
+                loadComments(currentPostId);
 
-    // AJAX-based Edit and Delete functions for flyout comments
-    $(document).on('click', '.flyout .edit-comment', function() {
-        const li = $(this).closest('li');
-        const commentId = li.data('comment-id');
-        const contentSpan = li.find('.comment-content');
-        const currentContent = contentSpan.text();
-        contentSpan.replaceWith(`<input type="text" class="comment-edit-input" value="${currentContent}">`);
-        $(this).text('Save').removeClass('edit-comment').addClass('save-comment');
-    });
+                document.getElementById('overlay').style.display = 'block';
+                document.getElementById('flyout').style.display = 'block';
+            });
 
-    $(document).on('click', '.flyout .save-comment', function() {
-        const li = $(this).closest('li');
-        const commentId = li.data('comment-id');
-        const newContent = li.find('.comment-edit-input').val();
-        $.post("comments.php", { 
-            action: 'edit_comment',
-            comment_id: commentId,
-            content: newContent
-        }, function(response) {
-            const data = JSON.parse(response);
-            if (data.status === 'success') {
-                li.find('.comment-edit-input').replaceWith(`<span class="comment-content">${data.content}</span>`);
-                li.find('.save-comment').text('Edit').removeClass('save-comment').addClass('edit-comment');
+            // Handle adding comments in the flyout
+            $('.flyout-add-comment').click(function() {
+                const commentInput = $('.flyout-comment-input');
+                const commentContent = commentInput.val();
+
+                if (commentContent.trim() !== '') {
+                    // Disable the button to prevent multiple submissions
+                    $(this).prop('disabled', true);
+
+                    $.post("comments.php", { 
+                        action: 'add_comment',
+                        post_id: currentPostId, // Use the stored post ID
+                        content: commentContent
+                    }, function(response) {
+                        const data = JSON.parse(response);
+                        if (data.status === 'success') {
+                            commentInput.val(''); // Clear the input field
+                            loadComments(currentPostId); // Reload comments
+                        }
+                        // Re-enable the button after the request is complete
+                        $('.flyout-add-comment').prop('disabled', false);
+                    });
+                }
+            });
+
+            function loadComments(postId) {
+                let flyoutList = document.getElementById('flyout-list');
+                flyoutList.innerHTML = '';
+
+                // Fetch comments for the flyout via AJAX
+                $.post("comments.php", { 
+                    action: 'get_comments',
+                    post_id: postId
+                }, function(response) {
+                    let comments = JSON.parse(response);
+                    comments.forEach(comment => {
+                        let li = document.createElement('li');
+                        li.setAttribute('data-comment-id', comment.id);
+                        li.innerHTML = `<strong><a href="../../views/user/view_profile.php?user_id=${comment.user_id}" style="text-decoration: none; color: black;">${comment.username}</a>:</strong> <span class="comment-content">${comment.content}</span> 
+                            <button class="edit-comment btn btn-sm btn-link">Edit</button>
+                            <button class="delete-comment btn btn-sm btn-link">Delete</button>`;
+                        flyoutList.appendChild(li);
+                    });
+                });
             }
         });
-    });
 
-    $(document).on('click', '.flyout .delete-comment', function() {
-        const li = $(this).closest('li');
-        const commentId = li.data('comment-id');
-        if (confirm('Are you sure you want to delete this comment?')) {
+        function closeFlyout() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('flyout').style.display = 'none';
+        }
+
+        // AJAX-based Edit and Delete functions for flyout comments
+        $(document).on('click', '.flyout .edit-comment', function() {
+            const li = $(this).closest('li');
+            const commentId = li.data('comment-id');
+            const contentSpan = li.find('.comment-content');
+            const currentContent = contentSpan.text();
+            contentSpan.replaceWith(`<input type="text" class="comment-edit-input" value="${currentContent}">`);
+            $(this).text('Save').removeClass('edit-comment').addClass('save-comment');
+        });
+
+        $(document).on('click', '.flyout .save-comment', function() {
+            const li = $(this).closest('li');
+            const commentId = li.data('comment-id');
+            const newContent = li.find('.comment-edit-input').val();
             $.post("comments.php", { 
-                action: 'delete_comment',
-                comment_id: commentId
+                action: 'edit_comment',
+                comment_id: commentId,
+                content: newContent
             }, function(response) {
                 const data = JSON.parse(response);
                 if (data.status === 'success') {
-                    li.remove();
+                    li.find('.comment-edit-input').replaceWith(`<span class="comment-content">${data.content}</span>`);
+                    li.find('.save-comment').text('Edit').removeClass('save-comment').addClass('edit-comment');
                 }
             });
-        }
-    });
-</script>
+        });
+
+        $(document).on('click', '.flyout .delete-comment', function() {
+            const li = $(this).closest('li');
+            const commentId = li.data('comment-id');
+            if (confirm('Are you sure you want to delete this comment?')) {
+                $.post("comments.php", { 
+                    action: 'delete_comment',
+                    comment_id: commentId
+                }, function(response) {
+                    const data = JSON.parse(response);
+                    if (data.status === 'success') {
+                        li.remove();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

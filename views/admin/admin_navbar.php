@@ -14,15 +14,7 @@
             </ul>
 
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i> Admin
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                        <li><a class="dropdown-item" href="admin_settings.php">Settings</a></li>
-                        <li><a class="dropdown-item text-danger" href="admin_logout.php">Logout</a></li>
-                    </ul>
-                </li>
+            <li><a class="dropdown-item text-danger" href="admin_logout.php">Logout</a></li>
             </ul>
         </div>
     </div>
