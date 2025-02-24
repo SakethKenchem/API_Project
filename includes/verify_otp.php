@@ -64,30 +64,66 @@ $message = $otpVerification->getMessage();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify OTP</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+
+        .btn-success {
+            width: 100%;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .form-control {
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .header-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container mt-5">
-    <div class="card mx-auto" style="max-width: 500px;">
-        <div class="card-header text-center"><h4>Verify OTP</h4></div>
-        <div class="card-body">
-            <?php if ($message): ?>
-                <div class="alert alert-danger"><?php echo $message; ?></div>
-            <?php endif; ?>
-            <form method="POST" action="">
-                <div class="mb-3">
-                    <label for="otp" class="form-label">OTP Code</label>
-                    <input type="text" class="form-control" id="otp" name="otp" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Verify</button>
-            </form>
-        </div>
+    <div class="card text-center">
+        <div class="header-text">Not Instagram</div>
+        <h3 class="mb-3">Verify OTP</h3>
+        <p class="text-muted">Enter the OTP sent to your email to sign up</p>
+        <form method="POST" action="">
+            <div class="mb-3">
+                <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter OTP" required>
+            </div>
+            <button type="submit" class="btn btn-success">Verify</button>
+        </form>
+        <?php if ($message): ?>
+            <div class="alert alert-danger mt-3">
+                <?= ($message) ?>
+            </div>
+        <?php endif; ?>
     </div>
-</div>
 </body>
+
 </html>

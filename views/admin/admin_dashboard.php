@@ -345,7 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             <td>
                                 ${post.image_url ? 
                                     `<img src="${imageUrl}" class="post-image" 
-                                          data-content="${post.content}"
+                                          data-content="${post.content.split(' ').slice(0, 9).join(' ')}..."
                                           data-image-url="${imageUrl}"
                                           data-username="${post.username || 'Unknown'}"
                                           data-created="${post.created_at}"
