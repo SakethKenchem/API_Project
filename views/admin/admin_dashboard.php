@@ -32,25 +32,26 @@ class AdminDashboard
     }
 
     public function fetchPosts($search = '')
-    {
-        $query = "SELECT p.*, u.username 
-                 FROM posts p 
-                 LEFT JOIN users u ON p.user_id = u.id";
-        if ($search) {
-            $query .= " WHERE p.content LIKE :search 
-                       OR u.username LIKE :search 
-                       OR DATE_FORMAT(p.created_at, '%Y-%m-%d') LIKE :search";
-        }
-        $query .= " ORDER BY p.created_at DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        if ($search) {
-            $searchTerm = '%' . $search . '%';
-            $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+{
+    $query = "SELECT p.*, u.username 
+             FROM posts p 
+             LEFT JOIN users u ON p.user_id = u.id";
+    if ($search) {
+        $query .= " WHERE p.content LIKE :search 
+                   OR u.username LIKE :search 
+                   OR DATE_FORMAT(p.created_at, '%Y-%m-%d') LIKE :search
+                   OR p.user_id LIKE :search";
     }
+    $query .= " ORDER BY p.created_at DESC";
+
+    $stmt = $this->conn->prepare($query);
+    if ($search) {
+        $searchTerm = '%' . $search . '%';
+        $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+    }
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public function deleteUser($id)
     {
@@ -87,20 +88,35 @@ class AdminDashboard
         return $stmt->fetchColumn();
     }
 
-
+    public function fetchUserDetails($userId)
+    {
+        $query = "SELECT u.id, u.username, u.email, 
+                         (SELECT COUNT(*) FROM posts WHERE user_id = u.id) AS post_count,
+                         (SELECT COUNT(*) FROM comments WHERE user_id = u.id) AS comment_count,
+                         (SELECT COUNT(*) FROM likes WHERE user_id = u.id) AS like_count
+                  FROM users u
+                  WHERE u.id = :userId";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 
 $dashboard = new AdminDashboard($conn);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $id = intval($_POST['id']);
-    
+
     if ($_POST['action'] === 'delete_user') {
         $dashboard->deleteUser($id);
         echo json_encode(['success' => true]);
     } elseif ($_POST['action'] === 'delete_post') {
         $dashboard->deletePost($id);
         echo json_encode(['success' => true]);
+    } elseif ($_POST['action'] === 'fetch_user_details') {
+        $userDetails = $dashboard->fetchUserDetails($id);
+        echo json_encode($userDetails);
     }
     exit;
 }
@@ -122,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -146,6 +163,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         .scrollable-table {
             max-height: 400px;
             overflow-y: auto;
+        }
+
+        .scrollable-table tbody {
+            max-height: 200px;
+            /* Adjust the height as needed */
+            overflow-y: auto;
+            display: block;
+        }
+
+        .scrollable-table thead,
+        .scrollable-table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         body {
@@ -177,6 +208,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             display: none;
             width: 20px;
             height: 20px;
+        }
+
+        .table th,
+        .table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 26%;
+        }
+
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            width: 15%;
         }
     </style>
 </head>
@@ -213,8 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         <div class="card text-white bg-warning mb-3">
                             <div class="card-header">Daily Logins</div>
                             <div class="card-body">
-                                <h5 class="card-title
-                                "><?= $dashboard->countDailyLogins(); ?></h5>
+                                <h5 class="card-title"><?= $dashboard->countDailyLogins(); ?></h5>
                             </div>
                         </div>
                     </div>
@@ -244,7 +291,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             <div class="col-md-6">
                 <h3>Posts</h3>
                 <div class="search-container mb-3">
-                    <input type="text" id="search-posts" class="form-control" placeholder="Search posts by content, username, or date (YYYY-MM-DD)">
+                <input type="text" id="search-posts" class="form-control" placeholder="Search posts by content, username, date (YYYY-MM-DD), or user ID">
                     <span class="search-icon">
                         <img src="../../assets/images/loading.gif" class="loading-spinner" id="posts-loading">
                         <i class="bi bi-search"></i>
@@ -264,6 +311,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         </thead>
                         <tbody id="posts-table"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="width: fit-content;">
+                    <p style="width: fit-content;"><strong>Username:</strong> <span id="modalUsername"></span></p>
+                    <p style="width: fit-content; word-break: break-all;"><strong>Email:</strong> <span id="modalEmail"></span></p>
+                    <p style="width: fit-content;"><strong>Posts:</strong> <span id="modalPostCount"></span></p>
+                    <p style="width: fit-content;"><strong>Comments:</strong> <span id="modalCommentCount"></span></p>
+                    <p><strong>Likes:</strong> <span id="modalLikeCount"></span></p>
                 </div>
             </div>
         </div>
@@ -291,53 +357,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    let usersSearchTimeout;
-    let postsSearchTimeout;
+        let usersSearchTimeout;
+        let postsSearchTimeout;
 
-    function fetchUsers(search = '') {
-        $('#users-loading').show();
-        $.ajax({
-            url: 'admin_dashboard.php',
-            type: 'GET',
-            data: { search_users: search },
-            success: function(data) {
-                const users = JSON.parse(data);
-                const usersTable = $('#users-table');
-                usersTable.empty();
-                users.forEach(user => {
-                    usersTable.append(`
+        function fetchUsers(search = '') {
+            $('#users-loading').show();
+            $.ajax({
+                url: 'admin_dashboard.php',
+                type: 'GET',
+                data: {
+                    search_users: search
+                },
+                success: function(data) {
+                    const users = JSON.parse(data);
+                    const usersTable = $('#users-table');
+                    usersTable.empty();
+                    users.forEach(user => {
+                        usersTable.append(`
                         <tr>
                             <td>${user.id}</td>
-                            <td>${user.username}</td>
+                            <td><span class="username-link" data-id="${user.id}">${user.username}</span></td>
                             <td>${user.email}</td>
                             <td><span class="delete-btn" data-id="${user.id}" data-type="user">Delete</span></td>
                         </tr>
                     `);
-                });
-            },
-            complete: function() {
-                $('#users-loading').hide();
-            }
-        });
-    }
+                    });
+                },
+                complete: function() {
+                    $('#users-loading').hide();
+                }
+            });
+        }
 
-    function fetchPosts(search = '') {
-        $('#posts-loading').show();
-        $.ajax({
-            url: 'admin_dashboard.php',
-            type: 'GET',
-            data: { search_posts: search },
-            success: function(data) {
-                const posts = JSON.parse(data);
-                const postsTable = $('#posts-table');
-                postsTable.empty();
-                posts.forEach(post => {
-                    const imageUrl = post.image_url ? `../../uploads/${post.image_url}` : '';
-                    const truncatedContent = post.content.length > 50 ? 
-                        post.content.substring(0, 50) + '...' : 
-                        post.content;
-                    
-                    postsTable.append(`
+        function fetchPosts(search = '') {
+            $('#posts-loading').show();
+            $.ajax({
+                url: 'admin_dashboard.php',
+                type: 'GET',
+                data: {
+                    search_posts: search
+                },
+                success: function(data) {
+                    const posts = JSON.parse(data);
+                    const postsTable = $('#posts-table');
+                    postsTable.empty();
+                    posts.forEach(post => {
+                        const imageUrl = post.image_url ? `../../uploads/${post.image_url}` : '';
+                        const truncatedContent = post.content.length > 50 ?
+                            post.content.substring(0, 50) + '...' :
+                            post.content;
+
+                        postsTable.append(`
                         <tr>
                             <td>${post.id}</td>
                             <td>${post.username || 'Unknown'}</td>
@@ -356,71 +426,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             <td><span class="delete-btn" data-id="${post.id}" data-type="post">Delete</span></td>
                         </tr>
                     `);
-                });
-            },
-            complete: function() {
-                $('#posts-loading').hide();
-            }
-        });
-    }
-
-    // Initial load
-    fetchUsers();
-    fetchPosts();
-
-    // Search handlers with debouncing
-    $('#search-users').on('input', function() {
-        clearTimeout(usersSearchTimeout);
-        usersSearchTimeout = setTimeout(() => {
-            fetchUsers($(this).val());
-        }, 300);
-    });
-
-    $('#search-posts').on('input', function() {
-        clearTimeout(postsSearchTimeout);
-        postsSearchTimeout = setTimeout(() => {
-            fetchPosts($(this).val());
-        }, 300);
-    });
-
-    // Delete handlers
-    $(document).on('click', '.delete-btn', function() {
-        if (confirm('Are you sure you want to delete this?')) {
-            const id = $(this).data('id');
-            const type = $(this).data('type');
-            $.ajax({
-                url: 'admin_dashboard.php',
-                type: 'POST',
-                data: { 
-                    action: type === 'user' ? 'delete_user' : 'delete_post', 
-                    id: id 
+                    });
                 },
-                success: function(response) {
-                    const result = JSON.parse(response);
-                    if (result.success) {
-                        if (type === 'user') {
-                            fetchUsers($('#search-users').val());
-                        } else {
-                            fetchPosts($('#search-posts').val());
-                        }
-                    }
+                complete: function() {
+                    $('#posts-loading').hide();
                 }
             });
         }
-    });
 
-    // Post image modal handler
-    $(document).on('click', '.post-image', function() {
-        const $this = $(this);
-        $('#postContent').text($this.data('content'));
-        $('#postImage').attr('src', $this.data('image-url'));
-        $('#postInfo').html(`
+        // Initial load
+        fetchUsers();
+        fetchPosts();
+
+        // Search handlers with debouncing
+        $('#search-users').on('input', function() {
+            clearTimeout(usersSearchTimeout);
+            usersSearchTimeout = setTimeout(() => {
+                fetchUsers($(this).val());
+            }, 300);
+        });
+
+        $('#search-posts').on('input', function() {
+            clearTimeout(postsSearchTimeout);
+            postsSearchTimeout = setTimeout(() => {
+                fetchPosts($(this).val());
+            }, 300);
+        });
+
+        // Delete handlers
+        $(document).on('click', '.delete-btn', function() {
+            if (confirm('Are you sure you want to delete this?')) {
+                const id = $(this).data('id');
+                const type = $(this).data('type');
+                $.ajax({
+                    url: 'admin_dashboard.php',
+                    type: 'POST',
+                    data: {
+                        action: type === 'user' ? 'delete_user' : 'delete_post',
+                        id: id
+                    },
+                    success: function(response) {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            if (type === 'user') {
+                                fetchUsers($('#search-users').val());
+                            } else {
+                                fetchPosts($('#search-posts').val());
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // Post image modal handler
+        $(document).on('click', '.post-image', function() {
+            const $this = $(this);
+            $('#postContent').text($this.data('content'));
+            $('#postImage').attr('src', $this.data('image-url'));
+            $('#postInfo').html(`
             Posted by: ${$this.data('username')}<br>
             Created: ${new Date($this.data('created')).toLocaleString()}
             
         `);
-        $('#postModal').modal('show');
-    });
+            $('#postModal').modal('show');
+        });
+
+        // Username click handler
+        $(document).on('click', '.username-link', function() {
+            const userId = $(this).data('id');
+            $.ajax({
+                url: 'admin_dashboard.php',
+                type: 'POST',
+                data: {
+                    action: 'fetch_user_details',
+                    id: userId
+                },
+                success: function(response) {
+                    const userDetails = JSON.parse(response);
+                    $('#modalUsername').text(userDetails.username);
+                    $('#modalEmail').text(userDetails.email);
+                    $('#modalPostCount').text(userDetails.post_count);
+                    $('#modalCommentCount').text(userDetails.comment_count);
+                    $('#modalLikeCount').text(userDetails.like_count);
+                    $('#userDetailsModal').modal('show');
+                }
+            });
+        });
     </script>
 </body>
+
 </html>

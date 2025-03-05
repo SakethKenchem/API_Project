@@ -164,7 +164,7 @@ $posts = $dashboard->getPosts();
 
 <body>
     <div class="container mt-4">
-        <h3 class="text-center mb-4">Welcome, <?= ($user['username']) ?></h3>
+        <h3 class="text-center mb-4">Hi, <?= ($user['username']) ?> !👋</h3>
         <div class="posts-container">
             <?php foreach ($posts as $post): ?>
                 <div class="post-card">
